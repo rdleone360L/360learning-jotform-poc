@@ -1,20 +1,73 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
+
+        <style>
+            #groups {
+                min-width: 400px;
+                padding: 4px 12px;
+            }
+        </style>
     </head>
     <body>
         <div id="main">
-            <h3>This is my first widget.</h3>
-            <span id="labelText"></span>
-            <input type="text" id="userInput">
+            <label for="groups">Select a group:</label>
+            <select name="groups" id="groups"></select>
         </div>
         <script type="text/javascript">
+            /**
+             * Get all groups in 360L 
+             */
+            async function getGroups() {
+                try {
+                    const params = {
+                        method: 'GET',
+                        redirect: 'follow'
+                    }
+                    // May want to start w/ API v1 b/c of easier auth
+                    const res = await fetch("https://app.360learning.com/api/v2/groups", params)
+                    return await res.json();
+                } catch(error) {
+                    console.error("API error:", error);
+                    return;
+                }
+            }
+
+            /**
+             * Populate group selection dropdown with
+             * options containing names of groups.
+             */
+            function createGroupSelectOptions(groups, element) {
+                const names = groups.map(g => g.name);
+
+                for(let i = 0; i < names.length; i++) {
+                    const groupOption = document.createElement('option');
+                    groupOption.value = groups[i];
+
+                    element.appendChild(groupOption);
+                }
+
+                return;
+            }
+
             //always subscribe to ready event and implement widget related code
             //inside callback function , it is the best practice while developing widgets
             JFCustomWidget.subscribe("ready", function(){
-                var label = JFCustomWidget.getWidgetSetting('QuestionLabel');
-                document.getElementById('labelText').innerHTML = label;
+
+                let groupSelect = document.querySelector('#groups');
+                const groups = [
+                    {
+                        _id: "642da7c3f84c707fa6b4f763",
+                        custom: "blabla",
+                        public: false,
+                        name: "Tech Services"
+                    }
+                ];
+                createGroupSelectOptions(groups, groupSelect);
+                
                 //subscribe to form submit event
                 JFCustomWidget.subscribe("submit", function(){
                     var msg = {
