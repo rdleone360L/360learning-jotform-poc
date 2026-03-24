@@ -23,6 +23,8 @@
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
             </select>
+
+            <button id="submit-test">Submit</button>
             
             <div id="debug-info"></div>
         </div>
@@ -150,7 +152,7 @@
                 });
 
                 // 3. Handle Form Submission
-                JFCustomWidget.subscribe("submit", async function() {
+                JFCustomWidget.subscribe("submit", function() {
                     const formData = {
                         userId: userSelect.value || "",
                         groupId: groupSelect.value || ""
@@ -161,11 +163,26 @@
                         value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
                     };
                     // Send results to Workato
-                    let submission = await sendFormData(result.value);
+                    let submission = sendFormData(result.value);
 
                     JFCustomWidget.sendSubmit(result);
                 });
             });
+
+            const groupSelect = document.querySelector('#groups');
+            const userSelect = document.querySelector('#users');
+            const submitBtn = document.querySelector("#submit-test");
+
+            groupSelect.value = "1234";
+            userSelect.value = "5678";
+            console.log(groupSelect.value);
+
+            submitBtn.addEventListener("click", async function() {
+                await sendFormData({
+                    userId: groupSelect.value || "error",
+                    groupId: userSelect.value || "error"
+                })
+            })
 
         </script>
     </body>
