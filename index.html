@@ -6,91 +6,137 @@
         <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
 
         <style>
-            #groups {
-                min-width: 400px;
-                padding: 4px 12px;
-            }
+            #main { font-family: sans-serif; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+            select { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; }
+            label { font-weight: bold; font-size: 14px; margin-top: 5px; }
+            #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
         </style>
     </head>
     <body>
         <div id="main">
-            <label for="groups">Select a group:</label>
-            <select name="groups" id="groups"></select>
+            <label for="groups">Select a Group:</label>
+            <select name="groups" id="groups">
+                <option value="">-- Loading Groups... --</option>
+            </select>
+
+            <label for="users">Select a User:</label>
+            <select name="users" id="users" disabled>
+                <option value="">-- Select a Group First --</option>
+            </select>
+            
+            <div id="debug-info"></div>
         </div>
+
         <script type="text/javascript">
-            /**
-             * Get all groups in 360L.
-             * NOTE: Need to figure out how to implement secure auth
-             */
+            
+            // --- CONFIGURATION ---
+            const WORKATO_GROUPS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/groups";            
+            const WORKATO_USERS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/groups/users";
+            const WORKATO_API_TOKEN = "b2250c7091ab1096be02367b2304c9b427542f660a61433865bb3d9c0b6a8a65";
+
+            // --- API CALLS ---
+
             async function getGroups() {
                 try {
-                    const params = {
+                    const res = await fetch(WORKATO_GROUPS_URL, { 
                         method: 'GET',
-                        redirect: 'follow'
-                    }
-                    // May want to start w/ API v1 b/c of easier auth
-                    const res = await fetch("https://app.360learning.com/api/v2/groups", params)
-                    return await res.json();
+                        headers: {
+                            'api-token': WORKATO_API_TOKEN,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const rawData = await res.json();
+                    return rawData.Groups || []; 
+
                 } catch(error) {
-                    console.error("API error:", error);
+                    console.error("Group Fetch Failed:", error);
+                    return [];
+                }
+            }
+
+            async function getUsers(groupId) {
+                try {
+                    const workatoUsersEndpoint = `${WORKATO_USERS_URL}?groupId=${groupId}`;
+                    const res = await fetch(workatoUsersEndpoint, { 
+                        method: 'GET',
+                        headers: {
+                            'api-token': WORKATO_API_TOKEN,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const userData = await res.json();
+                    return userData.Users || []; 
+
+                } catch(error) {
+                    console.error("User Fetch Failed:", error);
+                    return [];
+                }
+            }
+
+            // --- UI HELPERS ---
+
+            function populateDropdown(element, data, type) {
+                element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
+                
+                if (!data || data.length === 0) {
+                    element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
                 }
-            }
 
-            /**
-             * Populate group selection dropdown with
-             * options containing names of groups.
-             */
-            function createGroupSelectOptions(groups, element) {
-                for(let i = 0; i < groups.length; i++) {
-                    const group = groups[i];
-
-                    const groupOption = document.createElement('option');
-                    groupOption.text = group.name;
-                    groupOption.value = group._id;
-
-                    element.appendChild(groupOption);
-                }
-
-                return;
-            }
-
-            //always subscribe to ready event and implement widget related code
-            //inside callback function , it is the best practice while developing widgets
-            JFCustomWidget.subscribe("ready", function(){
-
-                let groupSelect = document.querySelector('#groups');
-
-                // Step 1: Get information of form user?
-
-                // Step 2: Fetch eligible groups from 360L
-                // const groups = getGroups();
-                const groups = [
-                    {
-                        _id: "642da7c3f84c707fa6b4f763",
-                        custom: "blabla",
-                        public: false,
-                        name: "Tech Services"
-                    }
-                ];
-
-                // Step 3: Populate dropdown with group options
-                createGroupSelectOptions(groups, groupSelect);
-
-                // Step 4: Show additional dropdown for user selection
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item._id; 
+                    opt.text = item.mail || item.name || "Unknown"; 
+                    element.appendChild(opt);
+                });
                 
-                //subscribe to form submit event
-                JFCustomWidget.subscribe("submit", function(){
-                    var msg = {
-                        //you should valid attribute to data for JotForm
-                        //to be able to use youw widget as required
-                        valid: true,
-                        value: document.getElementById('userInput').value
+                element.disabled = false;
+            }
+
+            // --- JOTFORM WIDGET INITIALIZATION ---
+
+            JFCustomWidget.subscribe("ready", async function() {
+                const groupSelect = document.querySelector('#groups');
+                const userSelect = document.querySelector('#users');
+
+                // 1. Load Groups
+                const groups = await getGroups();
+                populateDropdown(groupSelect, groups, "Group");
+
+                // 2. Change Listener for Groups
+                groupSelect.addEventListener('change', async function() {
+                    const selectedGroupId = this.value;
+                    
+                    if (!selectedGroupId) {
+                        userSelect.disabled = true;
+                        userSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
+                        return;
                     }
-                    // send value to JotForm
-                    JFCustomWidget.sendSubmit(msg);
+                    
+                    userSelect.disabled = true;
+                    userSelect.innerHTML = '<option value="">Loading users...</option>';
+                    
+                    const users = await getUsers(selectedGroupId);
+                    populateDropdown(userSelect, users, "User");
+                });
+
+                // 3. Handle Form Submission
+                JFCustomWidget.subscribe("submit", function() {
+                    const selectedValue = userSelect.value;
+                    const result = {
+                        valid: !!selectedValue,
+                        value: selectedValue // This saves the User _id to the Jotform submission
+                    };
+                    JFCustomWidget.sendSubmit(result);
                 });
             });
+
         </script>
     </body>
 </html>
