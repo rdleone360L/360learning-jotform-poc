@@ -168,7 +168,6 @@
 
                 inputEl.addEventListener("input", () => {
                     const val = inputEl.value.toLowerCase();
-                    listEl.innerHTML = "";
                     selectedValue = null;
 
                     const filtered = options.filter(opt => 
@@ -225,7 +224,7 @@
                 activateSearchableDropdown(groupSelect, groupList, groupOptions);
 
                 // 2. Change Listener for Groups
-                groupSelect.addEventListener('blur', async function() {
+                groupSelect.addEventListener('change', async function() {
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
