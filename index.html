@@ -7,17 +7,48 @@
 
         <style>
             #main { font-family: sans-serif; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-            select { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; }
+            select, input { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; }
             label { font-weight: bold; font-size: 14px; margin-top: 5px; }
             #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
+
+            .dropdown  {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .dropdown-list {
+                min-width: 50%;
+                border: 1px solid #ccc;
+                max-height: 150px;
+                overflow-y: auto;
+                background: white;
+                display: none;
+                z-index: 1000;
+            }
+
+            .dropdown-item {
+                padding: 8px;
+                cursor: pointer;
+            }
+
+            .dropdown-item:hover {
+                background: #eee;
+            }
         </style>
     </head>
     <body>
         <div id="main">
-            <label for="groups">Select a Group:</label>
+            <!-- <label for="groups">Select a Group:</label>
             <select name="groups" id="groups">
                 <option value="">-- Loading Groups... --</option>
-            </select>
+            </select> -->
+            
+            <div class="dropdown">
+                <label for="groups-input">Select a Group:</label>
+                <input type="text" id="groups-input" placeholder="-- Select a group --" autocomplete="off">
+                <div id="groups-list" class="dropdown-list"></div>
+            </div>
 
             <label for="users">Select a User:</label>
             <select name="users" id="users" disabled>
@@ -121,6 +152,55 @@
                 });
                 
                 element.disabled = false;
+
+                return data.map(item => item.mail || item.name || "Unknown");
+            }
+
+            /**
+             * Implements a searchable dropdown input that forces the user
+             * to enter a value included in the specified options list.
+             * @param {Node} inputEl - The input HTML element
+             * @param {Node} listEl - The option list HTML element
+             * @param {Array} options - The list of accepted options
+             */ 
+            function activateSearchableDropdown(inputEl, listEl, options) {
+                let selectedValue = null;
+
+                inputEl.addEventListener("input", () => {
+                    const val = inputEl.value.toLowerCase();
+                    listEl.innerHTML = "";
+                    selectedValue = null;
+
+                    const filtered = options.filter(opt => 
+                        opt.toLowerCase().includes(val)
+                    )
+
+                    if(filtered.length === 0) { 
+                        listEl.style.display = "none";
+                        return;
+                    }
+
+                    filtered.forEach(opt => {
+                        const div = document.createElement("div");
+                        div.textContent = opt;
+                        div.classList.add("dropdown-item");
+
+                        div.addEventListener("click", () => {
+                            inputEl.value = opt;
+                            selectedValue = opt;
+                            listEl.style.display = "none";
+                        });
+
+                        listEl.appendChild(div);
+                    });
+
+                    listEl.style.display = "block";
+                });
+
+                inputEl.addEventListener("blur", () => {
+                    inputEl.value = "";
+                    // listEl.style.display = "none";
+                })
             }
 
             function tasksCompleted(checkboxes) {
@@ -135,15 +215,17 @@
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function() {
-                const groupSelect = document.querySelector('#groups');
+                const groupSelect = document.querySelector('#groups-input');
                 const userSelect = document.querySelector('#users');
+                const groupList = document.querySelector('#groups-list');
 
                 // 1. Load Groups
                 const groups = await getGroups();
-                populateDropdown(groupSelect, groups, "Group");
+                const groupOptions = populateDropdown(groupSelect, groups, "Group");
+                activateSearchableDropdown(groupSelect, groupList, groupOptions);
 
                 // 2. Change Listener for Groups
-                groupSelect.addEventListener('change', async function() {
+                groupSelect.addEventListener('blur', async function() {
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
