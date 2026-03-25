@@ -161,7 +161,7 @@
 
                 // 3. Handle Form Submission
                 JFCustomWidget.subscribe("submit", async function() {
-                    const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]');
+                    const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
                     const formData = {
                         userId: userSelect.value || "",
                         groupId: groupSelect.value || "",
