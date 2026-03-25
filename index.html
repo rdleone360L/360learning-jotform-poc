@@ -137,7 +137,6 @@
             JFCustomWidget.subscribe("ready", async function() {
                 const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
-                const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]');
 
                 // 1. Load Groups
                 const groups = await getGroups();
@@ -162,6 +161,7 @@
 
                 // 3. Handle Form Submission
                 JFCustomWidget.subscribe("submit", async function() {
+                    const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]');
                     const formData = {
                         userId: userSelect.value || "",
                         groupId: groupSelect.value || "",
