@@ -198,7 +198,7 @@
 
                 inputEl.addEventListener("blur", () => {
                     inputEl.value = "";
-                    // listEl.style.display = "none";
+                    listEl.style.display = "none";
                 })
             }
 
@@ -224,7 +224,7 @@
                 activateSearchableDropdown(groupSelect, groupList, groupOptions);
 
                 // 2. Change Listener for Groups
-                groupSelect.addEventListener('change', async function() {
+                groupSelect.addEventListener('change', async function(event) {
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
@@ -236,6 +236,7 @@
                     userSelect.disabled = true;
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
                     
+                    event.stopPropagation();    // To prevent sending input too early
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
                 });
