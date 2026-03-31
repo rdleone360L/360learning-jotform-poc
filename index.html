@@ -207,6 +207,10 @@
                 inputEl.addEventListener("blur", () => {
                     setTimeout(() => {
                         listEl.style.display = "none";
+                        if(!options.includes(inputEl.value)) {
+                            inputEl.value = "";
+                            alert("Please select one of the listed entries.");
+                        }
                     }, 150);
                 });
             }
@@ -237,7 +241,7 @@
                 activateSearchableDropdown(groupSelect, groupList, groupOptions);
 
                 // 2. Change Listener for Groups
-                groupSelect.addEventListener('blur', async function(event) {
+                groupSelect.addEventListener('change', async function(event) {
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
