@@ -161,6 +161,8 @@
                 });
                 
                 element.disabled = false;
+
+                return data.map(item => item.mail || item.name || "Unknown");
             }
 
             /**
@@ -182,7 +184,7 @@
                         opt.toLowerCase().includes(val)
                     )
 
-                    if(filtered.length === 0) { 
+                    if(filtered.length === 0 && inputEl.value) { 
                         listEl.style.display = "none";
                         return;
                     }
@@ -205,8 +207,27 @@
                 });
 
                 inputEl.addEventListener("blur", () => {
-                    inputEl.value = "";
-                })
+                    setTimeout(() => {
+                        listEl.style.display = "none";
+                        if(!options.includes(inputEl.value)) {
+                            inputEl.value = "";
+                            alert("Please select one of the listed entries.");
+                        }
+                    }, 150);
+                });
+            }
+
+            function validateSelection(value, options) {
+                return options.includes(value);
+            }
+
+            function tasksCompleted(checkboxes) {
+                for(el of checkboxes) {
+                    if(!el.checked)
+                        return false;
+                }
+
+                return true;
             }
 
             // --- JOTFORM WIDGET INITIALIZATION ---

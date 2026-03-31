@@ -7,18 +7,26 @@
 
         <style>
             #main { font-family: sans-serif; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-            select, input { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; }
+            select, input { 
+                width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; 
+            }
             label { font-weight: bold; font-size: 14px; margin-top: 5px; }
             #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
 
-            .dropdown  {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
+            .dropdown {
+                position: relative;
+                width: 250px;
+            }
+
+            .dropdown input {
+                width: 100%;
+                padding: 8px;
+                box-sizing: border-box;
             }
 
             .dropdown-list {
-                min-width: 50%;
+                position: absolute;
+                width: 100%;
                 border: 1px solid #ccc;
                 max-height: 150px;
                 overflow-y: auto;
@@ -174,7 +182,7 @@
                         opt.toLowerCase().includes(val)
                     )
 
-                    if(filtered.length === 0) { 
+                    if(filtered.length === 0 && inputEl.value) {
                         listEl.style.display = "none";
                         return;
                     }
@@ -197,9 +205,14 @@
                 });
 
                 inputEl.addEventListener("blur", () => {
-                    inputEl.value = "";
-                    listEl.style.display = "none";
-                })
+                    setTimeout(() => {
+                        listEl.style.display = "none";
+                    }, 150);
+                });
+            }
+
+            function validateSelection(value, options) {
+                return options.includes(value);
             }
 
             function tasksCompleted(checkboxes) {
@@ -224,7 +237,7 @@
                 activateSearchableDropdown(groupSelect, groupList, groupOptions);
 
                 // 2. Change Listener for Groups
-                groupSelect.addEventListener('change', async function(event) {
+                groupSelect.addEventListener('blur', async function(event) {
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
@@ -235,30 +248,33 @@
                     
                     userSelect.disabled = true;
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
-                    
-                    event.stopPropagation();    // To prevent sending input too early
+
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
                 });
 
                 // 3. Handle Form Submission
                 JFCustomWidget.subscribe("submit", async function() {
-                    const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
-                    const formData = {
-                        userId: userSelect.value || "",
-                        groupId: groupSelect.value || "",
-                        tasksCompleted: tasksCompleted(tasks)
+                    if(validateSelection(groupSelect.value)) {
+                        const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
+                        const formData = {
+                            userId: userSelect.value || "",
+                            groupId: groupSelect.value || "",
+                            tasksCompleted: tasksCompleted(tasks)
+                        }
+                        const selectedValue = userSelect.value;
+                        const result = {
+                            valid: !!selectedValue,
+                            value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
+                        };
+                        // Send results to Workato
+                        if(result.valid) {
+                            let submission = await sendFormData(formData);
+                        }
+                        JFCustomWidget.sendSubmit(result);
+                    } else {
+                        alert("Please select a valid option.");
                     }
-                    const selectedValue = userSelect.value;
-                    const result = {
-                        valid: !!selectedValue,
-                        value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
-                    };
-                    // Send results to Workato
-                    if(result.valid) {
-                        let submission = await sendFormData(formData);
-                    }
-                    JFCustomWidget.sendSubmit(result);
                 });
             });
 
