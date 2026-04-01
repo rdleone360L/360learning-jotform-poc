@@ -12,7 +12,7 @@
             }
             label { font-weight: bold; font-size: 14px; margin-top: 5px; }
             #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
-            #groups-input-id { visibility: hidden; width: 0; height: 0; }
+            #groups-input-id { visibility: hidden; }
 
             .dropdown {
                 position: relative;
@@ -49,13 +49,13 @@
     <body>
         <div id="main">
             <!-- <label for="groups">Select a Group:</label>
-            <select name="groups" id="groups" autocomplete="">
+            <select name="groups" id="groups">
                 <option value="">-- Loading Groups... --</option>
             </select> -->
-
+            
             <div class="dropdown">
                 <label for="groups-input">Select a Group:</label>
-                <input type="text" id="groups-input" placeholder="-- Loading Groups.. --" autocomplete="off">
+                <input type="text" id="groups-input" placeholder="-- Select a group --" autocomplete="off">
                 <input type="text" id="groups-input-id" disabled>
                 <div id="groups-list" class="dropdown-list"></div>
             </div>
@@ -64,8 +64,6 @@
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
             </select>
-
-            <button id="submit-test">Submit</button>
             
             <div id="debug-info"></div>
         </div>
@@ -133,7 +131,8 @@
                         },
                         body: JSON.stringify({ 
                             user_id: data.userId,
-                            group_id: data.groupId
+                            group_id: data.groupId,
+                            tasks_completed: data.tasksCompleted
                         })
                     });
 
@@ -149,7 +148,6 @@
 
             function populateDropdown(element, data, type) {
                 if (!data || data.length === 0) {
-                    element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
                 }
 
@@ -244,7 +242,8 @@
 
                 // 1. Load Groups
                 const groups = await getGroups();
-                populateDropdown(groupList, groups, "Group");
+                const groupOptions = populateDropdown(groupList, groups, "Group");
+                activateSearchableDropdown(groupSelect, groupList, groupOptions);
 
                 // 2. Change Listener for Groups
                 userSelect.addEventListener('click', async function(event) {
@@ -252,67 +251,39 @@
                     
                     if (!selectedGroupId) {
                         userSelect.disabled = true;
-                        userSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
                         return;
                     }
                     
                     userSelect.disabled = true;
-                    userSelect.innerHTML = '<option value="">Loading users...</option>';
-                    
+
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
                 });
 
                 // 3. Handle Form Submission
-                JFCustomWidget.subscribe("submit", function() {
-                    const formData = {
-                        userId: userSelect.value || "",
-                        groupId: groupSelect.value || ""
+                JFCustomWidget.subscribe("submit", async function() {
+                    if(validateSelection(groupSelect.value)) {
+                        const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
+                        const formData = {
+                            userId: userSelect.value || "",
+                            groupId: groupSelect.value || "",
+                            tasksCompleted: tasksCompleted(tasks)
+                        }
+                        const selectedValue = userSelect.value;
+                        const result = {
+                            valid: !!selectedValue,
+                            value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
+                        };
+                        // Send results to Workato
+                        if(result.valid) {
+                            let submission = await sendFormData(formData);
+                        }
+                        JFCustomWidget.sendSubmit(result);
+                    } else {
+                        alert("Please select a valid option.");
                     }
-                    const selectedValue = userSelect.value;
-                    const result = {
-                        valid: !!selectedValue,
-                        value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
-                    };
-                    // Send results to Workato
-                    let submission = sendFormData(result.value);
-
-                    JFCustomWidget.sendSubmit(result);
                 });
             });
-
-            // const groupSelect = document.querySelector('#groups');
-            // const userSelect = document.querySelector('#users');
-            // const submitBtn = document.querySelector("#submit-test");
-
-            // groupSelect.value = "1234";
-            // userSelect.value = "5678";
-            // console.log(groupSelect.value);
-
-            // submitBtn.addEventListener("click", async function() {
-            //     await sendFormData({
-            //         userId: groupSelect.value || "error",
-            //         groupId: userSelect.value || "error"
-            //     })
-            // })
-
-            const groupInput = document.querySelector("#groups-input");
-            const groupInputId = document.querySelector('#groups-input-id');
-            const groupList = document.querySelector("#groups-list");
-            const options = [{
-                _id: "1234",
-                name: "Group A"
-            },
-            {
-                _id: "2345",
-                name: "Group B"
-            },
-            {
-                _id: "3456",
-                name: "Group C"
-            }];
-            populateDropdown(groupList, options, "Group");
-            activateSearchableDropdown(groupInput, groupInputId, groupList, options.map(e => e.name));
 
         </script>
     </body>

@@ -7,56 +7,17 @@
 
         <style>
             #main { font-family: sans-serif; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-            select, input { 
-                width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; 
-            }
+            select { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; }
             label { font-weight: bold; font-size: 14px; margin-top: 5px; }
             #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
-
-            .dropdown {
-                position: relative;
-                width: 250px;
-            }
-
-            .dropdown input {
-                width: 100%;
-                padding: 8px;
-                box-sizing: border-box;
-            }
-
-            .dropdown-list {
-                position: absolute;
-                width: 100%;
-                border: 1px solid #ccc;
-                max-height: 150px;
-                overflow-y: auto;
-                background: white;
-                display: none;
-                z-index: 1000;
-            }
-
-            .dropdown-item {
-                padding: 8px;
-                cursor: pointer;
-            }
-
-            .dropdown-item:hover {
-                background: #eee;
-            }
         </style>
     </head>
     <body>
         <div id="main">
-            <!-- <label for="groups">Select a Group:</label>
+            <label for="groups">Select a Group:</label>
             <select name="groups" id="groups">
                 <option value="">-- Loading Groups... --</option>
-            </select> -->
-            
-            <div class="dropdown">
-                <label for="groups-input">Select a Group:</label>
-                <input type="text" id="groups-input" placeholder="-- Select a group --" autocomplete="off">
-                <div id="groups-list" class="dropdown-list"></div>
-            </div>
+            </select>
 
             <label for="users">Select a User:</label>
             <select name="users" id="users" disabled>
@@ -145,79 +106,21 @@
             // --- UI HELPERS ---
 
             function populateDropdown(element, data, type) {
+                element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
+                
                 if (!data || data.length === 0) {
+                    element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
                 }
 
                 data.forEach(item => {
-                    // const opt = document.createElement('option');
-                    const div = document.createElement("option");
-                    div.classList.add("dropdown-item");
-                    div.value = item._id;
-                    div.text = item.mail || item.name || "Unknown";
-                    div.hidden = true;
-                    element.appendChild(div);
+                    const opt = document.createElement('option');
+                    opt.value = item._id; 
+                    opt.text = item.mail || item.name || "Unknown"; 
+                    element.appendChild(opt);
                 });
                 
                 element.disabled = false;
-
-                return data.map(item => item.mail || item.name || "Unknown");
-            }
-
-            /**
-             * Implements a searchable dropdown input that forces the user
-             * to enter a value included in the specified options list.
-             * @param {Node} inputEl - The input HTML element
-             * @param {Node} listEl - The option list HTML element
-             * @param {Array} options - The list of accepted options
-             */ 
-            function activateSearchableDropdown(inputEl, listEl, options) {
-                let selectedValue = null;
-
-                inputEl.addEventListener("input", () => {
-                    const val = inputEl.value.toLowerCase();
-                    selectedValue = null;
-
-                    const filtered = options.filter(opt => 
-                        opt.toLowerCase().includes(val)
-                    )
-
-                    if(filtered.length === 0 && inputEl.value) { 
-                        listEl.style.display = "none";
-                        return;
-                    }
-
-                    const optDivs = document.querySelectorAll(".dropdown-item");
-
-                    filtered.forEach(opt => {
-                        for(el of optDivs) {
-                            if(el.textContent.trim() === opt) {
-                                el.hidden = false;
-                                el.addEventListener("click", () => {
-                                    inputEl.value = opt;
-                                    selectedValue = opt;
-                                    listEl.style.display = "none";
-                                });
-                                break;
-                            }
-                        }
-                    });
-
-                    listEl.style.display = "block";
-                });
-
-                inputEl.addEventListener("blur", () => {
-                    setTimeout(() => {
-                        listEl.style.display = "none";
-                        if(!options.includes(inputEl.value)) {
-                            inputEl.value = "";
-                        }
-                    }, 150);
-                });
-            }
-
-            function validateSelection(value, options) {
-                return options.includes(value);
             }
 
             function tasksCompleted(checkboxes) {
@@ -232,52 +135,48 @@
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function() {
-                const groupSelect = document.querySelector('#groups-input');
+                const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
-                const groupList = document.querySelector('#groups-list');
 
                 // 1. Load Groups
                 const groups = await getGroups();
-                const groupOptions = populateDropdown(groupList, groups, "Group");
-                activateSearchableDropdown(groupSelect, groupList, groupOptions);
+                populateDropdown(groupSelect, groups, "Group");
 
                 // 2. Change Listener for Groups
-                groupSelect.addEventListener('change', async function(event) {
+                groupSelect.addEventListener('change', async function() {
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
                         userSelect.disabled = true;
+                        userSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
                         return;
                     }
                     
                     userSelect.disabled = true;
-
+                    userSelect.innerHTML = '<option value="">Loading users...</option>';
+                    
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
                 });
 
                 // 3. Handle Form Submission
                 JFCustomWidget.subscribe("submit", async function() {
-                    if(validateSelection(groupSelect.value)) {
-                        const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
-                        const formData = {
-                            userId: userSelect.value || "",
-                            groupId: groupSelect.value || "",
-                            tasksCompleted: tasksCompleted(tasks)
-                        }
-                        const selectedValue = userSelect.value;
-                        const result = {
-                            valid: !!selectedValue,
-                            value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
-                        };
-                        // Send results to Workato
-                        if(result.valid) {
-                            let submission = await sendFormData(formData);
-                        }
-                        JFCustomWidget.sendSubmit(result);
-                    } else {
-                        alert("Please select a valid option.");
+                    const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
+                    const formData = {
+                        userId: userSelect.value || "",
+                        groupId: groupSelect.value || "",
+                        tasksCompleted: tasksCompleted(tasks)
                     }
+                    const selectedValue = userSelect.value;
+                    const result = {
+                        valid: !!selectedValue,
+                        value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
+                    };
+                    // Send results to Workato
+                    if(result.valid) {
+                        let submission = await sendFormData(formData);
+                    }
+                    JFCustomWidget.sendSubmit(result);
                 });
             });
 
