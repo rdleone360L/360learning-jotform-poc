@@ -248,12 +248,10 @@
                     
                     if (!selectedGroupId) {
                         userSelect.disabled = true;
-                        userSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
                         return;
                     }
                     
                     userSelect.disabled = true;
-                    userSelect.innerHTML = '<option value="">Loading users...</option>';
 
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
