@@ -146,18 +146,19 @@
             // --- UI HELPERS ---
 
             function populateDropdown(element, data, type) {
-                element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
-                
                 if (!data || data.length === 0) {
                     element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
                 }
 
                 data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item._id; 
-                    opt.text = item.mail || item.name || "Unknown"; 
-                    element.appendChild(opt);
+                    // const opt = document.createElement('option');
+                    const div = document.createElement("option");
+                    div.classList.add("dropdown-item");
+                    div.value = item._id;
+                    div.text = item.mail || item.name || "Unknown";
+                    element.appendChild(div);
+                    element.hidden = true;
                 });
                 
                 element.disabled = false;
@@ -177,7 +178,6 @@
 
                 inputEl.addEventListener("input", () => {
                     const val = inputEl.value.toLowerCase();
-                    listEl.innerHTML = "";
                     selectedValue = null;
 
                     const filtered = options.filter(opt => 
@@ -189,18 +189,32 @@
                         return;
                     }
 
+                    const optDivs = document.querySelectorAll(".dropdown-item");
+
                     filtered.forEach(opt => {
-                        const div = document.createElement("div");
-                        div.textContent = opt;
-                        div.classList.add("dropdown-item");
+                        // const div = document.createElement("div");
+                        // div.textContent = opt;
+                        // div.classList.add("dropdown-item");
 
-                        div.addEventListener("click", () => {
-                            inputEl.value = opt;
-                            selectedValue = opt;
-                            listEl.style.display = "none";
-                        });
+                        // div.addEventListener("click", () => {
+                        //     inputEl.value = opt;
+                        //     selectedValue = opt;
+                        //     listEl.style.display = "none";
+                        // });
 
-                        listEl.appendChild(div);
+                        // listEl.appendChild(div);
+
+                        for(el of optDivs) {
+                            if(el.textContent.trim() === opt) {
+                                el.visible = true;
+                                el.addEventListener("click", () => {
+                                    inputEl.value = opt;
+                                    selectedValue = opt;
+                                    listEl.style.display = "none";
+                                });
+                                break;
+                            }
+                        }
                     });
 
                     listEl.style.display = "block";
@@ -211,7 +225,6 @@
                         listEl.style.display = "none";
                         if(!options.includes(inputEl.value)) {
                             inputEl.value = "";
-                            alert("Please select one of the listed entries.");
                         }
                     }, 150);
                 });
@@ -235,10 +248,11 @@
             JFCustomWidget.subscribe("ready", async function() {
                 const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
+                const groupList = document.querySelector('#groups-list');
 
                 // 1. Load Groups
                 const groups = await getGroups();
-                populateDropdown(groupSelect, groups, "Group");
+                populateDropdown(groupList, groups, "Group");
 
                 // 2. Change Listener for Groups
                 groupSelect.addEventListener('change', async function() {
@@ -292,9 +306,20 @@
 
             const groupInput = document.querySelector("#groups-input");
             const groupList = document.querySelector("#groups-list");
-            const options = ["Group A", "Group B", "Group C"];
-
-            activateSearchableDropdown(groupInput, groupList, options);
+            const options = [{
+                _id: "1234",
+                name: "Group A"
+            },
+            {
+                _id: "2345",
+                name: "Group B"
+            },
+            {
+                _id: "3456",
+                name: "Group C"
+            }];
+            populateDropdown(groupList, options, "Group");
+            activateSearchableDropdown(groupInput, groupList, options.map(e => e.name));
 
         </script>
     </body>

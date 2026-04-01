@@ -145,18 +145,19 @@
             // --- UI HELPERS ---
 
             function populateDropdown(element, data, type) {
-                element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
-                
                 if (!data || data.length === 0) {
                     element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
                 }
 
                 data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item._id; 
-                    opt.text = item.mail || item.name || "Unknown"; 
-                    element.appendChild(opt);
+                    // const opt = document.createElement('option');
+                    const div = document.createElement("option");
+                    div.classList.add("dropdown-item");
+                    div.value = item._id;
+                    div.text = item.mail || item.name || "Unknown";
+                    element.appendChild(div);
+                    element.hidden = true;
                 });
                 
                 element.disabled = false;
@@ -182,23 +183,25 @@
                         opt.toLowerCase().includes(val)
                     )
 
-                    if(filtered.length === 0 && inputEl.value) {
+                    if(filtered.length === 0 && inputEl.value) { 
                         listEl.style.display = "none";
                         return;
                     }
 
+                    const optDivs = document.querySelectorAll(".dropdown-item");
+
                     filtered.forEach(opt => {
-                        const div = document.createElement("div");
-                        div.textContent = opt;
-                        div.classList.add("dropdown-item");
-
-                        div.addEventListener("click", () => {
-                            inputEl.value = opt;
-                            selectedValue = opt;
-                            listEl.style.display = "none";
-                        });
-
-                        listEl.appendChild(div);
+                        for(el of optDivs) {
+                            if(el.textContent.trim() === opt) {
+                                el.visible = true;
+                                el.addEventListener("click", () => {
+                                    inputEl.value = opt;
+                                    selectedValue = opt;
+                                    listEl.style.display = "none";
+                                });
+                                break;
+                            }
+                        }
                     });
 
                     listEl.style.display = "block";
@@ -209,7 +212,6 @@
                         listEl.style.display = "none";
                         if(!options.includes(inputEl.value)) {
                             inputEl.value = "";
-                            alert("Please select one of the listed entries.");
                         }
                     }, 150);
                 });
