@@ -146,7 +146,6 @@
 
             function populateDropdown(element, data, type) {
                 if (!data || data.length === 0) {
-                    element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
                 }
 
@@ -239,7 +238,7 @@
 
                 // 1. Load Groups
                 const groups = await getGroups();
-                const groupOptions = populateDropdown(groupSelect, groups, "Group");
+                const groupOptions = populateDropdown(groupList, groups, "Group");
                 activateSearchableDropdown(groupSelect, groupList, groupOptions);
 
                 // 2. Change Listener for Groups
