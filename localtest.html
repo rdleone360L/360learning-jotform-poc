@@ -157,8 +157,8 @@
                     div.classList.add("dropdown-item");
                     div.value = item._id;
                     div.text = item.mail || item.name || "Unknown";
+                    div.hidden = true;
                     element.appendChild(div);
-                    element.hidden = true;
                 });
                 
                 element.disabled = false;
