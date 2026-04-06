@@ -13,7 +13,11 @@
             label { font-weight: bold; font-size: 14px; margin-top: 5px; }
             #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
             #groups-input-id { visibility: hidden; width: 0; height: 0; }
-
+            .tasks {
+                display: flex;
+                flex-direction: column;
+                width: fit-content;
+            }
             .dropdown {
                 position: relative;
                 width: 250px;
@@ -64,6 +68,28 @@
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
             </select>
+
+            <div id="tasks">
+                <label for="tasks-performed">Tasks performed</label>
+                <div id="tasks-list">
+                    <span class="form-checkbox-item">
+                        <input type="checkbox" class="form-checkbox" id="task_1_1" value="Security Check 1">
+                        <label for="task_1_1">Security Check 1</label>
+                    </span>
+                    <span class="form-checkbox-item">
+                        <input type="checkbox" class="form-checkbox" id="task_1_2" value="Security Check 2">
+                        <label for="task_1_1">Security Check 2</label>
+                    </span>
+                    <span class="form-checkbox-item">
+                        <input type="checkbox" class="form-checkbox" id="task_1_3" value="Security Check 3">
+                        <label for="task_1_1">Security Check 3</label>
+                    </span>
+                    <span class="form-checkbox-item">
+                        <input type="checkbox" class="form-checkbox" id="task_1_4" value="Security Check 4">
+                        <label for="task_1_1">Security Check 4</label>
+                    </span>                                        
+                </div>
+            </div>
 
             <button id="submit-test">Submit</button>
             
