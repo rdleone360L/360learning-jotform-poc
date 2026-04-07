@@ -64,7 +64,7 @@
 
             async function getUserGroups(email) {
                 try {
-                    const res = await fetch(`${WORKATO_USER_GROUPS_URL}/${email}`, { 
+                    const res = await fetch(`${WORKATO_USER_GROUPS_URL}?email=${email}`, { 
                         method: 'GET',
                         headers: {
                             'api-token': WORKATO_API_TOKEN,
