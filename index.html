@@ -26,8 +26,6 @@
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
             </select>
-            
-            <div id="debug-info"></div>
         </div>
 
         <script type="text/javascript">
@@ -194,6 +192,7 @@
                 JFCustomWidget.subscribe("submit", async function() {
                     const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
                     const formData = {
+                        assessor: emailInput.value || "",
                         userId: userSelect.value || "",
                         groupId: groupSelect.value || "",
                         tasksCompleted: tasksCompleted(tasks)
