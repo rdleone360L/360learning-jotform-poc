@@ -158,6 +158,7 @@
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function() {
+                const userEmail = JFCustomWidget.getFieldsValueByName("email");
                 const emailInput = document.querySelector('#email');
                 const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
@@ -165,6 +166,8 @@
                 // 1. Load Groups
                 // const groups = await getUserGroups(email);
                 // populateDropdown(groupSelect, groups, "Group");
+
+                emailInput.textContent = userEmail.textContent;
 
                 emailInput.addEventListener('change', async function() {
                     const groups = await getUserGroups(this.value);
