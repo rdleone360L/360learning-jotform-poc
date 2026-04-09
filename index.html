@@ -166,8 +166,8 @@
 
             JFCustomWidget.subscribe("ready", async function() {
                 // GLOBAL FORM ELEMENTS //
-                const formText = JFCustomWidget.getFieldsValueByName(["form"]);
-                const emailText = JFCustomWidget.getFieldsValueByName(["email"]);
+                const formText = JFCustomWidget.getFieldsValueById(["input_8"]);
+                const emailText = JFCustomWidget.getFieldsValueById(["input_6"]);
                 console.log(emailText);
                 
                 // WIDGET ELEMENTS //
