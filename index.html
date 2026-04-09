@@ -167,13 +167,15 @@
             JFCustomWidget.subscribe("ready", async function() {
                 // GLOBAL FORM ELEMENTS //
                 let formValues; let emailValue;
-                const formText = JFCustomWidget.getFieldsValueById(["input_8"], function(values) {
-                    formValues = values["input_8"];
-                });
-                const emailText = JFCustomWidget.getFieldsValueById(["input_6"], function(values) {
-                    emailValue = values["input_6"];
-                });
-                console.log(emailText);
+                setTimeout(function() {
+                    const formText = JFCustomWidget.getFieldsValueById(["input_8"], function(values) {
+                        formValues = values["input_8"];
+                    });
+                    const emailText = JFCustomWidget.getFieldsValueById(["input_6"], function(values) {
+                        emailValue = values["input_6"];
+                    });
+                    console.log(emailText);
+                }, 500)
                 
                 // WIDGET ELEMENTS //
                 const emailInput = document.querySelector('#email');
