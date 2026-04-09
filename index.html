@@ -26,6 +26,13 @@
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
             </select>
+
+            <label for="forms">Select a Form:</label>
+            <select name="forms" id="forms" disabled>
+                <option value="" selected>-- Select a Group First --</option>
+                <option value="onboarding">Onboarding</option>
+                <option value="safety">Safety</option>
+            </select>
         </div>
 
         <script type="text/javascript">
@@ -158,13 +165,16 @@
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function() {
+                // GLOBAL FORM ELEMENTS //
+                const formText = JFCustomWidget.getFieldsValueByName(["form"]);
+                const emailText = JFCustomWidget.getFieldsValueByName(["email"]);
+                console.log(emailText);
+                
+                // WIDGET ELEMENTS //
                 const emailInput = document.querySelector('#email');
                 const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
-
-                // 1. Load Groups
-                // const groups = await getUserGroups(email);
-                // populateDropdown(groupSelect, groups, "Group");
+                const formSelect = document.querySelector('#forms');
 
                 emailInput.addEventListener('change', async function() {
                     const groups = await getUserGroups(this.value);
@@ -183,9 +193,17 @@
                     
                     userSelect.disabled = true;
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
+
+                    formSelect.disabled = true;
                     
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
+                });
+
+                formSelect.addEventListener('change', async function() {
+                    JFCustomWidget.setFieldsValueByLabel({
+                        Form: formSelect.value || ""
+                    });
                 });
 
                 // 3. Handle Form Submission
