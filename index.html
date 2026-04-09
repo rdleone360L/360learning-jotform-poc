@@ -135,6 +135,30 @@
 
             // --- UI HELPERS ---
 
+            function getdatatoiframe() {
+                this.init = init;
+                this.getData = getData;
+                
+                function getFieldsByX() {
+                    JFCustomWidget.getFieldsValueByName(
+                        ["email"],
+                        function(res) {
+                            console.log(JSON.stringify(res, null, 2));
+                            let items = (res && res.data) || [];
+                            let email;
+                            for(let i = 0; i < items.length; i++) {
+                                if(items[i].selector === "input_6") {
+                                    email = items[i].value || "";
+                                    break;
+                                }
+                            }
+                            let el = document.querySelector("#email");
+                            if(el) el.value = email;
+                        }
+                    )
+                }
+            }
+            
             function populateDropdown(element, data, type) {
                 element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
                 
@@ -164,18 +188,20 @@
 
             // --- JOTFORM WIDGET INITIALIZATION ---
 
-            JFCustomWidget.subscribe("ready", async function() {
-                // GLOBAL FORM ELEMENTS //
-                let formValues; let emailValue;
-                setTimeout(function() {
-                    const formText = JFCustomWidget.getFieldsValueById(["input_8"], function(values) {
-                        formValues = values["input_8"];
-                    });
-                    const emailText = JFCustomWidget.getFieldsValueById(["input_6"], function(values) {
-                        emailValue = values["input_6"];
-                    });
-                    console.log(emailText);
-                }, 500)
+            JFCustomWidget.subscribe("ready", async function(data) {
+                let widget = new getdatatoiframe();
+                widget.init(data);
+
+                // let formValues; let emailValue;
+                // setTimeout(function() {
+                //     const formText = JFCustomWidget.getFieldsValueById(["input_8"], function(values) {
+                //         formValues = values["input_8"];
+                //     });
+                //     const emailText = JFCustomWidget.getFieldsValueById(["input_6"], function(values) {
+                //         emailValue = values["input_6"];
+                //     });
+                //     console.log(emailText);
+                // }, 500)
                 
                 // WIDGET ELEMENTS //
                 const emailInput = document.querySelector('#email');
