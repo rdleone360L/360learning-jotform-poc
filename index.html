@@ -201,7 +201,7 @@
                     userSelect.disabled = true;
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
 
-                    formSelect.disabled = true;
+                    formSelect.disabled = false;
                     
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
