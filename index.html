@@ -133,7 +133,7 @@
                 }
             }
 
-            // --- UI HELPERS ---
+            // --- WIDGET SETUP ---
 
             function getdatatoiframe() {
                 this.init = init;
@@ -147,7 +147,7 @@
                             let items = (res && res.data) || [];
                             let email;
                             for(let i = 0; i < items.length; i++) {
-                                if(items[i].selector === "input_6") {
+                                if(items[i].selector === "email") {
                                     email = items[i].value || "";
                                     break;
                                 }
@@ -170,7 +170,7 @@
 				}
             }
 
-
+            // --- UI HELPERS ---
             
             function populateDropdown(element, data, type) {
                 element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
