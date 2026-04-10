@@ -208,27 +208,27 @@
                 const userSelect = document.querySelector('#users');
                 const formSelect = document.querySelector('#forms');
 
+                // HIDDEN FORM ELEMENTS //
+                const emailText = document.querySelector('#input_6');                
+
                 // let widget = new getdatatoiframe();
                 // widget.init(data);
 
-                let formValues; let emailValue;
                 setTimeout(function() {
-                    const formText = JFCustomWidget.getFieldsValueById(["input_8"], function(res) {
-                        items = (res && res.data) || [];
-                        if(emailInput && items) emailInput.value = items[0].value;
-                    });
                     const emailText = JFCustomWidget.getFieldsValueByName(["email"], function(res) {
                         items = (res && res.data) || [];
                         if(emailInput && items) emailInput.value = items[0].value;
                     });
                     console.log(emailText);
-                }, 300)
-                
+                }, 300);
 
-                emailInput.addEventListener('change', async function() {
-                    const groups = await getUserGroups(this.value);
-                    populateDropdown(groupSelect, groups, "Group")
-                });
+                // emailInput.addEventListener('change', async function() {
+                //     const groups = await getUserGroups(this.value);
+                //     populateDropdown(groupSelect, groups, "Group");
+                // });
+
+                const groups = await getUserGroups(emailText.value);
+                populateDropdown(groupSelect, groups, "Group");
 
                 // 2. Change Listener for Groups
                 groupSelect.addEventListener('change', async function() {
@@ -250,8 +250,8 @@
                 });
 
                 formSelect.addEventListener('change', async function() {
-                    JFCustomWidget.setFieldsValueById({
-                        "input_8" : formSelect.value || ""
+                    JFCustomWidget.setFieldsValueByLabel({
+                        "Form" : formSelect.value || ""
                     });
                 });
 
