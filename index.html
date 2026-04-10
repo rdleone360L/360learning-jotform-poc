@@ -171,15 +171,12 @@
 			// 	}
             // }
 
-            async function getPrefillEmail() {
-                let email;
+            function storePrefillEmail(element) {
                 JFCustomWidget.getFieldsValueByName(["email"], function(res) {
                     items = (res && res.data) || [];
-                    email = items[0].value;
+                    element.value = items[0].value;
                     return items[0].value;
                 });
-
-                return email;
             }
 
             // --- UI HELPERS ---
@@ -221,7 +218,7 @@
                 const formSelect = document.querySelector('#forms');
 
                 // HIDDEN FORM ELEMENTS //
-                let emailText = await getPrefillEmail();
+                storePrefillEmail();
 
                 // let widget = new getdatatoiframe();
                 // widget.init(data);
@@ -231,7 +228,7 @@
                 //     populateDropdown(groupSelect, groups, "Group");
                 // });
 
-                const groups = await getUserGroups(emailText);
+                const groups = await getUserGroups(emailInput.value);
                 populateDropdown(groupSelect, groups, "Group");
 
                 // 2. Change Listener for Groups
