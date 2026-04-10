@@ -217,7 +217,7 @@
                         items = (res && res.data) || [];
                         if(emailInput && items) emailInput.value = items[0].value;
                     });
-                    const emailText = JFCustomWidget.getFieldsValueById(["input_6"], function(res) {
+                    const emailText = JFCustomWidget.getFieldsValueByName(["email"], function(res) {
                         items = (res && res.data) || [];
                         if(emailInput && items) emailInput.value = items[0].value;
                     });
