@@ -218,7 +218,12 @@
                 const formSelect = document.querySelector('#forms');
 
                 // HIDDEN FORM ELEMENTS //
-                storePrefillEmail(emailInput);
+                // storePrefillEmail(emailInput);
+                JFCustomWidget.getFieldsValueByName(["email"], async function(res) {
+                    items = (res && res.data) || [];
+                    const groups = await getUserGroups(items[0].value);
+                    populateDropdown(groupSelect, groups, "Group");
+                });
 
                 // let widget = new getdatatoiframe();
                 // widget.init(data);
@@ -227,9 +232,6 @@
                 //     const groups = await getUserGroups(this.value);
                 //     populateDropdown(groupSelect, groups, "Group");
                 // });
-
-                const groups = await getUserGroups(emailInput.value);
-                populateDropdown(groupSelect, groups, "Group");
 
                 // 2. Change Listener for Groups
                 groupSelect.addEventListener('change', async function() {
