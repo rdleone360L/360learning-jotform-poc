@@ -135,40 +135,40 @@
 
             // --- WIDGET SETUP ---
 
-            function getdatatoiframe() {
-                this.init = init;
-                this.getData = getData;
+            // function getdatatoiframe() {
+            //     this.init = init;
+            //     this.getData = getData;
                 
-                function getFieldsByX() {
-                    JFCustomWidget.getFieldsValueByName(
-                        ["email"],
-                        function(res) {
-                            console.log(JSON.stringify(res, null, 2));
-                            let items = (res && res.data) || [];
-                            let email;
-                            for(let i = 0; i < items.length; i++) {
-                                if(items[i].selector === "email") {
-                                    email = items[i].value || "";
-                                    break;
-                                }
-                            }
-                            let el = document.querySelector("#email");
-                            if(el) el.value = email;
-                        }
-                    )
-                }
+            //     function getFieldsByX() {
+            //         JFCustomWidget.getFieldsValueByName(
+            //             ["email"],
+            //             function(res) {
+            //                 console.log(JSON.stringify(res, null, 2));
+            //                 let items = (res && res.data) || [];
+            //                 let email;
+            //                 for(let i = 0; i < items.length; i++) {
+            //                     if(items[i].selector === "email") {
+            //                         email = items[i].value || "";
+            //                         break;
+            //                     }
+            //                 }
+            //                 let el = document.querySelector("#email");
+            //                 if(el) el.value = email;
+            //             }
+            //         )
+            //     }
 
-                function init(formData) {
-                    getFieldsByX();
-                }
+            //     function init(formData) {
+            //         getFieldsByX();
+            //     }
 
-                function getData() {
-					return {
-						valid: true,
-						value: "TEST",
-					};
-				}
-            }
+            //     function getData() {
+			// 		return {
+			// 			valid: true,
+			// 			value: "TEST",
+			// 		};
+			// 	}
+            // }
 
             // --- UI HELPERS ---
             
@@ -202,25 +202,28 @@
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function(data) {
-                let widget = new getdatatoiframe();
-                widget.init(data);
-
-                // let formValues; let emailValue;
-                // setTimeout(function() {
-                //     const formText = JFCustomWidget.getFieldsValueById(["input_8"], function(values) {
-                //         formValues = values["input_8"];
-                //     });
-                //     const emailText = JFCustomWidget.getFieldsValueById(["input_6"], function(values) {
-                //         emailValue = values["input_6"];
-                //     });
-                //     console.log(emailText);
-                // }, 500)
-                
                 // WIDGET ELEMENTS //
                 const emailInput = document.querySelector('#email');
                 const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
                 const formSelect = document.querySelector('#forms');
+
+                // let widget = new getdatatoiframe();
+                // widget.init(data);
+
+                let formValues; let emailValue;
+                setTimeout(function() {
+                    const formText = JFCustomWidget.getFieldsValueById(["input_8"], function(res) {
+                        items = (res && res.data) || [];
+                        if(emailInput && items) emailInput.value = items[0].value;
+                    });
+                    const emailText = JFCustomWidget.getFieldsValueById(["input_6"], function(res) {
+                        items = (res && res.data) || [];
+                        if(emailInput && items) emailInput.value = items[0].value;
+                    });
+                    console.log(emailText);
+                }, 300)
+                
 
                 emailInput.addEventListener('change', async function() {
                     const groups = await getUserGroups(this.value);
