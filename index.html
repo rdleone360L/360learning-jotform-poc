@@ -209,15 +209,15 @@
                 const formSelect = document.querySelector('#forms');
 
                 // HIDDEN FORM ELEMENTS //
-                const emailText = document.querySelector('#input_6');                
+                let emailText;
 
                 // let widget = new getdatatoiframe();
                 // widget.init(data);
 
                 setTimeout(function() {
-                    const emailText = JFCustomWidget.getFieldsValueByName(["email"], function(res) {
+                    emailText = JFCustomWidget.getFieldsValueByName(["email"], function(res) {
                         items = (res && res.data) || [];
-                        if(emailInput && items) emailInput.value = items[0].value;
+                        return items[0].value;
                     });
                     console.log(emailText);
                 }, 300);
@@ -227,7 +227,7 @@
                 //     populateDropdown(groupSelect, groups, "Group");
                 // });
 
-                const groups = await getUserGroups(emailText.value);
+                const groups = await getUserGroups(emailText);
                 populateDropdown(groupSelect, groups, "Group");
 
                 // 2. Change Listener for Groups
