@@ -23,16 +23,16 @@
                 <option value="">-- Loading Groups... --</option>
             </select>
 
-            <label for="users">Select a User:</label>
-            <select name="users" id="users" disabled>
-                <option value="">-- Select a Group First --</option>
-            </select>
-
             <label for="forms">Select a Form:</label>
             <select name="forms" id="forms" disabled>
                 <option value="" selected>-- Select a Group First --</option>
                 <option value="onboarding">Onboarding</option>
                 <option value="safety">Safety</option>
+            </select>
+
+            <label for="users">Select a User:</label>
+            <select name="users" id="users" disabled>
+                <option value="">-- Select a Group First --</option>
             </select>
         </div>
 
@@ -218,7 +218,6 @@
                 const formSelect = document.querySelector('#forms');
 
                 // HIDDEN FORM ELEMENTS //
-                // storePrefillEmail(emailInput);
                 JFCustomWidget.getFieldsValueByName(["email"], async function(res) {
                     items = (res && res.data) || [];
                     const groups = await getUserGroups(items[0].value);
@@ -253,9 +252,9 @@
                 });
 
                 formSelect.addEventListener('change', async function() {
-                    JFCustomWidget.setFieldsValueByLabel({
-                        "form" : formSelect.value
-                    });
+                    JFCustomWidget.setFieldsValueByLabel([
+                        { label: "Form", value: formSelect.value }
+                    ]);
                 });
 
                 // 3. Handle Form Submission
