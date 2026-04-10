@@ -157,11 +157,20 @@
                         }
                     )
                 }
+
+                function init(formData) {
+                    getFieldsByX();
+                }
+
+                function getData() {
+					return {
+						valid: true,
+						value: "TEST",
+					};
+				}
             }
 
-            function init(formData) {
-                getFieldsByX();
-            }
+
             
             function populateDropdown(element, data, type) {
                 element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
