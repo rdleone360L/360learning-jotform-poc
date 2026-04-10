@@ -214,13 +214,11 @@
                 // let widget = new getdatatoiframe();
                 // widget.init(data);
 
-                setTimeout(function() {
-                    emailText = JFCustomWidget.getFieldsValueByName(["email"], function(res) {
-                        items = (res && res.data) || [];
-                        return items[0].value;
-                    });
-                    console.log(emailText);
-                }, 300);
+                emailText = JFCustomWidget.getFieldsValueByName(["email"], function(res) {
+                    items = (res && res.data) || [];
+                    return items[0].value;
+                });
+                console.log(emailText);
 
                 // emailInput.addEventListener('change', async function() {
                 //     const groups = await getUserGroups(this.value);
