@@ -15,8 +15,7 @@
     </head>
     <body>
         <div id="main">
-            <!-- <label for="email">Enter your 360Learning email:</label> -->
-            <input type="email" id="email" name="email">
+            <input type="email" id="assessor" name="assessor">
 
             <label for="groups">Select a Group:</label>
             <select name="groups" id="groups">
@@ -111,73 +110,27 @@
                 }
             }
 
-            async function sendFormData(data) {
-                try {
-                    const res = await fetch(WORKATO_ON_SUBMIT_URL, {
-                        method: "POST",
-                        headers: {
-                            'api-token': WORKATO_API_TOKEN,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                            user_id: data.userId,
-                            group_id: data.groupId,
-                            tasks_completed: data.tasksCompleted
-                        })
-                    });
+            // async function sendFormData(data) {
+            //     try {
+            //         const res = await fetch(WORKATO_ON_SUBMIT_URL, {
+            //             method: "POST",
+            //             headers: {
+            //                 'api-token': WORKATO_API_TOKEN,
+            //                 'Accept': 'application/json'
+            //             },
+            //             body: JSON.stringify({ 
+            //                 user_id: data.userId,
+            //                 group_id: data.groupId
+            //             })
+            //         });
 
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
-                } catch(error) {
-                    console.error("Form data export failed:", error);
-                    return [];
-                }
-            }
-
-            // --- WIDGET SETUP ---
-
-            // function getdatatoiframe() {
-            //     this.init = init;
-            //     this.getData = getData;
-                
-            //     function getFieldsByX() {
-            //         JFCustomWidget.getFieldsValueByName(
-            //             ["email"],
-            //             function(res) {
-            //                 console.log(JSON.stringify(res, null, 2));
-            //                 let items = (res && res.data) || [];
-            //                 let email;
-            //                 for(let i = 0; i < items.length; i++) {
-            //                     if(items[i].selector === "email") {
-            //                         email = items[i].value || "";
-            //                         break;
-            //                     }
-            //                 }
-            //                 let el = document.querySelector("#email");
-            //                 if(el) el.value = email;
-            //             }
-            //         )
+            //         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            //         return res.json();
+            //     } catch(error) {
+            //         console.error("Form data export failed:", error);
+            //         return [];
             //     }
-
-            //     function init(formData) {
-            //         getFieldsByX();
-            //     }
-
-            //     function getData() {
-			// 		return {
-			// 			valid: true,
-			// 			value: "TEST",
-			// 		};
-			// 	}
             // }
-
-            function storePrefillEmail(element) {
-                JFCustomWidget.getFieldsValueByName(["email"], function(res) {
-                    items = (res && res.data) || [];
-                    element.value = items[0].value;
-                    return items[0].value;
-                });
-            }
 
             // --- UI HELPERS ---
             
@@ -191,48 +144,30 @@
 
                 data.forEach(item => {
                     const opt = document.createElement('option');
-                    opt.value = item._id; 
-                    opt.text = item.mail || item.name || "Unknown"; 
+                    opt.value = type !== "Form" ? item._id : item; 
+                    opt.text = type !== "Form" ? (item.mail || item.name || "Unknown") : item; 
                     element.appendChild(opt);
                 });
                 
                 element.disabled = false;
             }
 
-            function tasksCompleted(checkboxes) {
-                for(el of checkboxes) {
-                    if(!el.checked)
-                        return false;
-                }
-
-                return true;
-            }
-
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function(data) {
                 // WIDGET ELEMENTS //
-                const emailInput = document.querySelector('#email');
+                const assessorInput = document.querySelector('#assessor');
                 const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
                 const formSelect = document.querySelector('#forms');
 
-                // HIDDEN FORM ELEMENTS //
-                JFCustomWidget.getFieldsValueByName(["email"], async function(res) {
+                // Store prefilled email into widget
+                JFCustomWidget.getFieldsValueByName(["assessor"], async function(res) {
                     items = (res && res.data) || [];
                     const groups = await getUserGroups(items[0].value);
                     populateDropdown(groupSelect, groups, "Group");
                 });
 
-                // let widget = new getdatatoiframe();
-                // widget.init(data);
-
-                // emailInput.addEventListener('change', async function() {
-                //     const groups = await getUserGroups(this.value);
-                //     populateDropdown(groupSelect, groups, "Group");
-                // });
-
-                // 2. Change Listener for Groups
                 groupSelect.addEventListener('change', async function() {
                     const selectedGroupId = this.value;
                     
@@ -241,12 +176,13 @@
                         userSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
                         return;
                     }
+
+                    formSelect.disabled = true;
+                    formSelect.innerHTML = '<option value="">Loading forms...</option>';
+                    populateDropdown(formSelect, ["Safety", "Onbaording"], "Form");
                     
                     userSelect.disabled = true;
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
-
-                    formSelect.disabled = false;
-                    
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
                 });
@@ -257,14 +193,18 @@
                     ]);
                 });
 
+                userSelect.addEventListener('change', async function() {
+                    JFCustomWidget.setFieldsValueByLabel([
+                        { label: "Assessee", value: userSelect.value }
+                    ]);
+                });
+
                 // 3. Handle Form Submission
                 JFCustomWidget.subscribe("submit", async function() {
-                    const tasks = document.querySelectorAll('[name="q7_tasksPerformed[]"]'); // Comes up empty, maybe widget can't see elements outside the iframe?
                     const formData = {
-                        assessor: emailInput.value || "",
+                        assessor: assessorInput.value || "",
                         userId: userSelect.value || "",
-                        groupId: groupSelect.value || "",
-                        tasksCompleted: tasksCompleted(tasks)
+                        groupId: groupSelect.value || ""
                     }
                     const selectedValue = userSelect.value;
                     const result = {
@@ -272,9 +212,9 @@
                         value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
                     };
                     // Send results to Workato
-                    if(result.valid) {
-                        let submission = await sendFormData(formData);
-                    }
+                    // if(result.valid) {
+                    //     let submission = await sendFormData(formData);
+                    // }
                     JFCustomWidget.sendSubmit(result);
                 });
             });
