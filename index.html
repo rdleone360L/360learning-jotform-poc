@@ -135,8 +135,6 @@
             // --- UI HELPERS ---
             
             function populateDropdown(element, data, type) {
-                element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
-                
                 if (!data || data.length === 0) {
                     element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
