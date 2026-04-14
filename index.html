@@ -193,7 +193,7 @@
 
                 userSelect.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
-                        { label: "Learner", value: userSelect.value }
+                        { label: "Learner", value: userSelect.selectedOptions[0].text }
                     ]);
                 });
 
