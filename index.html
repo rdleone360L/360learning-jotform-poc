@@ -25,8 +25,6 @@
             <label for="forms">Select a Form:</label>
             <select name="forms" id="forms" disabled>
                 <option value="" selected>-- Select a Group First --</option>
-                <!-- <option value="onboarding">Onboarding</option>
-                <option value="safety">Safety</option> -->
             </select>
 
             <label for="users">Select a User:</label>
@@ -135,8 +133,8 @@
             // --- UI HELPERS ---
             
             function populateDropdown(element, data, type) {
-                element.innerHTML = '';
-
+                element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
+                
                 if (!data || data.length === 0) {
                     element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
@@ -179,7 +177,7 @@
 
                     formSelect.disabled = true;
                     formSelect.innerHTML = '<option value="">Loading forms...</option>';
-                    populateDropdown(formSelect, ["Personal Hygiene and Health", "Pump Truck On The Job"], "Form");
+                    populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
                     userSelect.disabled = true;
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
