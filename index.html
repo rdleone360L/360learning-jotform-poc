@@ -25,8 +25,8 @@
             <label for="forms">Select a Form:</label>
             <select name="forms" id="forms" disabled>
                 <option value="" selected>-- Select a Group First --</option>
-                <option value="onboarding">Onboarding</option>
-                <option value="safety">Safety</option>
+                <!-- <option value="onboarding">Onboarding</option>
+                <option value="safety">Safety</option> -->
             </select>
 
             <label for="users">Select a User:</label>
@@ -179,7 +179,7 @@
 
                     formSelect.disabled = true;
                     formSelect.innerHTML = '<option value="">Loading forms...</option>';
-                    populateDropdown(formSelect, ["Safety", "Onboarding"], "Form");
+                    populateDropdown(formSelect, ["Personal Hygiene and Health", "Pump Truck On The Job"], "Form");
                     
                     userSelect.disabled = true;
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
