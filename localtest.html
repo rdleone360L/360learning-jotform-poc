@@ -67,15 +67,41 @@
                 <div id="groups-list" class="dropdown-list"></div>
             </div>
 
+            <label for="forms">Select a Form:</label>
+            <select name="forms" id="forms">
+                <option value="onboarding">Onboarding</option>
+                <option value="safety" selected>Safety</option>
+            </select>
+
             <label for="users">Select a User:</label>
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
             </select>
 
-            <label for="forms">Select a Form:</label>
-            <select name="forms" id="forms">
+            <!-- <details>
+                <summary>Select user(s)</summary>
+                <form>
+                    <fieldset>
+                        <legend>Users</legend>
+                        <ul>
+                            <li>
+                                <label for="safety">Safety</label>
+                                <input type="checkbox" id="safety" name="safety" value="safety">
+                            </li>
+                            <li>
+                                <label for="onboarding">Onboarding</label>
+                                <input type="checkbox" id="onboarding" name="onboarding" value="onboarding">
+                            </li>
+                        </ul>
+                    </fieldset>
+                </form>
+            </details> -->
+
+            <label for="users-mult">Select User(s):</label>
+            <select name="users-mult" id="users-mult" multiple size="1" listbox="true">
+                <option value="safety">Safety</option>
                 <option value="onboarding">Onboarding</option>
-                <option value="safety" selected>Safety</option>
+                <option value="dei">DEI</option>
             </select>
 
             <div id="tasks">
@@ -348,6 +374,12 @@
             }];
             populateDropdown(groupList, options, "Group");
             activateSearchableDropdown(groupInput, groupInputId, groupList, options.map(e => e.name));
+
+            const usersMultSelect = document.querySelector("#users-mult");
+            usersMultSelect.addEventListener('change', event => {
+                let selected = [...usersMultSelect.selectedOptions].map(op => op.value);
+                console.log(selected);
+            })
 
         </script>
     </body>

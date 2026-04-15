@@ -31,6 +31,11 @@
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
             </select>
+
+            <label for="users-mult">Select User(s):</label>
+            <select name="users-mult" id="users-mult" disabled>
+                <option value="">-- Select a Group First --</option>
+            </select>
         </div>
 
         <script type="text/javascript">
@@ -157,6 +162,7 @@
                 const assessorInput = document.querySelector('#assessor');
                 const groupSelect = document.querySelector('#groups');
                 const userSelect = document.querySelector('#users');
+                const usersMultSelect = document.querySelector('#users-mult');
                 const formSelect = document.querySelector('#forms');
 
                 // Store prefilled email into widget
@@ -194,6 +200,12 @@
                 userSelect.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
                         { label: "Learner", value: userSelect.selectedOptions[0].text }
+                    ]);
+                });
+
+                userSelect.addEventListener('change', async function() {
+                    JFCustomWidget.setFieldsValueByLabel([
+                        { label: "Learner", value: [...usersMultSelect.selectedOptions].map(op => op.value) }
                     ]);
                 });
 
