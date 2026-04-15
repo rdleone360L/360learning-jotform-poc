@@ -27,10 +27,10 @@
                 <option value="" selected>-- Select a Group First --</option>
             </select>
 
-            <label for="users">Select a User:</label>
+            <!-- <label for="users">Select a User:</label>
             <select name="users" id="users" disabled>
                 <option value="">-- Select a Group First --</option>
-            </select>
+            </select> -->
 
             <label for="users-mult">Select User(s):</label>
             <select name="users-mult" id="users-mult" multiple size="1" listbox="true" disabled>
@@ -161,7 +161,7 @@
                 // WIDGET ELEMENTS //
                 const assessorInput = document.querySelector('#assessor');
                 const groupSelect = document.querySelector('#groups');
-                const userSelect = document.querySelector('#users');
+                // const userSelect = document.querySelector('#users');
                 const usersMultSelect = document.querySelector('#users-mult');
                 const formSelect = document.querySelector('#forms');
 
@@ -176,8 +176,8 @@
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
-                        userSelect.disabled = true;
-                        userSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
+                        usersMultSelect.disabled = true;
+                        usersMultSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
                         return;
                     }
 
@@ -185,10 +185,9 @@
                     formSelect.innerHTML = '<option value="">Loading forms...</option>';
                     populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
-                    userSelect.disabled = true;
-                    userSelect.innerHTML = '<option value="">Loading users...</option>';
+                    usersMultSelect.disabled = true;
+                    usersMultSelect.innerHTML = '<option value="">Loading users...</option>';
                     const users = await getUsers(selectedGroupId);
-                    populateDropdown(userSelect, users, "User");
                     populateDropdown(usersMultSelect, users, "User");
                 });
 
@@ -198,11 +197,11 @@
                     ]);
                 });
 
-                userSelect.addEventListener('change', async function() {
-                    JFCustomWidget.setFieldsValueByLabel([
-                        { label: "Learner", value: userSelect.selectedOptions[0].text }
-                    ]);
-                });
+                // userSelect.addEventListener('change', async function() {
+                //     JFCustomWidget.setFieldsValueByLabel([
+                //         { label: "Learner", value: userSelect.selectedOptions[0].text }
+                //     ]);
+                // });
 
                 usersMultSelect.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
@@ -214,10 +213,10 @@
                 JFCustomWidget.subscribe("submit", async function() {
                     const formData = {
                         assessor: assessorInput.value || "",
-                        userId: userSelect.value || "",
+                        userId: [...usersMultSelect.selectedOptions].map(op => op.text) || [],
                         groupId: groupSelect.value || ""
                     }
-                    const selectedValue = userSelect.value;
+                    const selectedValue = [...usersMultSelect.selectedOptions].map(op => op.text);
                     const result = {
                         valid: !!selectedValue,
                         value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
