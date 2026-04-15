@@ -204,9 +204,9 @@
                     ]);
                 });
 
-                userSelect.addEventListener('change', async function() {
+                usersMultSelect.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
-                        { label: "Learner", value: [...usersMultSelect.selectedOptions].map(op => op.value) }
+                        { label: "Learner", value: [...usersMultSelect.selectedOptions].map(op => op.text) }
                     ]);
                 });
 
