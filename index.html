@@ -189,6 +189,7 @@
                     userSelect.innerHTML = '<option value="">Loading users...</option>';
                     const users = await getUsers(selectedGroupId);
                     populateDropdown(userSelect, users, "User");
+                    populateDropdown(usersMultSelect, users, "User");
                 });
 
                 formSelect.addEventListener('change', async function() {
