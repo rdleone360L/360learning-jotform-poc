@@ -91,7 +91,7 @@
             <label for="users">Select User(s):</label>
             <div class="multiselect">
                 <div class="selected-box" id="users-selected-box">
-                    <input type="text" name="users" id="users-search-input" placeholder="Select users...">
+                    <input type="text" name="users" id="users-search-input" placeholder="Select users..." disabled>
                 </div>
                 <div class="dropdown" id="users-dropdown"></div>
             </div>
@@ -107,7 +107,7 @@
             const WORKATO_API_TOKEN = "b2250c7091ab1096be02367b2304c9b427542f660a61433865bb3d9c0b6a8a65";
 
             const selected = new Map();
-            const options = [];
+            let options = [];
 
             // --- API CALLS ---
 
@@ -321,11 +321,11 @@
                     formSelect.innerHTML = '<option value="">Loading forms...</option>';
                     populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
-                    // usersInput.disabled = true;
-                    options = await getUsers(selectedGroupId);
+                    usersInput.disabled = true;
                     usersInput.innerHTML = '<option value="">Loading users...</option>';
+                    options = await getUsers(selectedGroupId);
                     renderDropdown(usersDropdown, options, "");
-                    
+                    usersInput.disabled = false;
                     // populateDropdown(usersInput, users, "User");
                 });
 
@@ -346,7 +346,8 @@
 
                 usersInput.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
-                        { label: "Learner", value: [...usersInput.selectedOptions].map(op => op.text) }
+                        { label: "Learner", value: usersInput.value }
+                        // { label: "Learner", value: [...usersInput.selectedOptions].map(op => op.text) }
                     ]);
                 });
 
