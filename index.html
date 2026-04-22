@@ -4,13 +4,69 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
-
         <style>
-            #main { font-family: sans-serif; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-            input, select { width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; }
-            label { font-weight: bold; font-size: 14px; margin-top: 5px; }
-            #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
-            #assessor { display: none }
+            html * {
+                box-sizing: border-box;
+            }
+            #main { 
+                font-family: sans-serif;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            select, .selected-box {
+                width: 100%;
+                max-width: 400px;
+                padding: 8px 12px;
+                border-radius: 4px;
+                border: 1px solid #ccc;
+                background-color: white;
+            }
+            label {
+                font-weight: bold;
+                font-size: 14px;
+                margin-top: 5px; 
+            }
+            #debug-info { 
+                margin-top: 10px;
+                font-size: 11px;
+                color: #d9534f;
+            }
+            #assessor { 
+                display: none
+            }
+            .selected-box {
+                cursor: text;
+                display: flex;
+                flex-wrap: wrap;
+            }
+            .selected-box input {
+                width: 100%;
+                border: none;
+                outline: none;
+                flex: 1;
+            }
+            .dropdown {
+                position: absolute;
+                width: 400px;
+                border: 1px solid #ccc;
+                max-height: 200px;
+                overflow-y: auto;
+                background: white;
+                display: none;
+                z-index: 1000;
+            }
+            .option {
+                padding: 6px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+            }
+            .option:hover {
+                background: #f0f0f0;
+            }
         </style>
     </head>
     <body>
@@ -27,10 +83,18 @@
                 <option value="" selected>-- Select a Group First --</option>
             </select>
 
-            <label for="users-mult">Select User(s):</label>
+            <!-- <label for="users-mult">Select User(s):</label>
             <select name="users-mult" id="users-mult" multiple size="1" listbox="true" disabled>
                 <option value="">-- Select a Group First --</option>
-            </select>
+            </select> -->
+
+            <label for="users">Select User(s):</label>
+            <div class="multiselect">
+                <div class="selected-box" id="users-selected-box">
+                    <input type="text" name="users" id="users-search-input" placeholder="Select users...">
+                </div>
+                <div class="dropdown" id="users-dropdown"></div>
+            </div>
         </div>
 
         <script type="text/javascript">
@@ -167,7 +231,10 @@
                 // WIDGET ELEMENTS //
                 const assessorInput = document.querySelector('#assessor');
                 const groupSelect = document.querySelector('#groups');
-                const usersMultSelect = document.querySelector('#users-mult');
+                // const usersMultSelect = document.querySelector('#users-mult');
+                const usersDropdown = document.getElementById("users-dropdown");
+                const usersInput = document.getElementById("users-search-input");
+                const usersSelectedBox = document.getElementById("users-selected-box");
                 const formSelect = document.querySelector('#forms');
 
                 // Store prefilled email into widget
@@ -181,8 +248,8 @@
                     const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
-                        usersMultSelect.disabled = true;
-                        usersMultSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
+                        usersInput.disabled = true;
+                        usersInput.innerHTML = '<option value="">-- Select a Group First --</option>';
                         return;
                     }
 
@@ -190,10 +257,10 @@
                     formSelect.innerHTML = '<option value="">Loading forms...</option>';
                     populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
-                    usersMultSelect.disabled = true;
-                    usersMultSelect.innerHTML = '<option value="">Loading users...</option>';
+                    usersInput.disabled = true;
+                    usersInput.innerHTML = '<option value="">Loading users...</option>';
                     const users = await getUsers(selectedGroupId);
-                    populateDropdown(usersMultSelect, users, "User");
+                    populateDropdown(usersInput, users, "User");
                 });
 
                 formSelect.addEventListener('change', async function() {
@@ -201,10 +268,19 @@
                         { label: "Form", value: formSelect.value }
                     ]);
                 });
+                
+                usersInput.addEventListener("focus", () => {
+                    usersInput.value = "";
+                    renderDropdown("");
+                });
 
-                usersMultSelect.addEventListener('change', async function() {
+                usersInput.addEventListener("input", () => {
+                    renderDropdown(usersInput.value);
+                });
+
+                usersInput.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
-                        { label: "Learner", value: [...usersMultSelect.selectedOptions].map(op => op.text) }
+                        { label: "Learner", value: [...usersInput.selectedOptions].map(op => op.text) }
                     ]);
                 });
 
@@ -212,10 +288,10 @@
                 JFCustomWidget.subscribe("submit", async function() {
                     const formData = {
                         assessor: assessorInput.value || "",
-                        userId: [...usersMultSelect.selectedOptions].map(op => op.text) || [],
+                        userId: [...usersInput.selectedOptions].map(op => op.text) || [],
                         groupId: groupSelect.value || ""
                     }
-                    const selectedValue = [...usersMultSelect.selectedOptions].map(op => op.text);
+                    const selectedValue = [...usersInput.selectedOptions].map(op => op.text);
                     const result = {
                         valid: !!selectedValue,
                         value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission

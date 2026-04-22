@@ -6,135 +6,98 @@
         <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
 
         <style>
-            #main { font-family: sans-serif; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-            select, input { 
-                width: 100%; max-width: 400px; padding: 8px 12px; border-radius: 4px; border: 1px solid #ccc; background-color: white; 
-            }
-            label { font-weight: bold; font-size: 14px; margin-top: 5px; }
-            #debug-info { margin-top: 10px; font-size: 11px; color: #d9534f; }
-            #groups-input-id { visibility: hidden; width: 0; height: 0; }
-            .tasks {
-                display: flex;
-                flex-direction: column;
-                width: fit-content;
-            }
-            .dropdown {
-                position: relative;
-                width: 250px;
-            }
-
-            .dropdown input {
-                width: 100%;
-                padding: 8px;
+            html * {
                 box-sizing: border-box;
             }
-
-            .dropdown-list {
-                position: absolute;
+            #main { 
+                font-family: sans-serif;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            select, .selected-box {
                 width: 100%;
+                max-width: 400px;
+                padding: 8px 12px;
+                border-radius: 4px;
                 border: 1px solid #ccc;
-                max-height: 150px;
+                background-color: white;
+            }
+            label {
+                font-weight: bold;
+                font-size: 14px;
+                margin-top: 5px; 
+            }
+            #debug-info { 
+                margin-top: 10px;
+                font-size: 11px;
+                color: #d9534f;
+            }
+            #assessor { 
+                display: none
+            }
+            .selected-box {
+                cursor: text;
+                display: flex;
+                flex-wrap: wrap;
+            }
+            .selected-box input {
+                width: 100%;
+                border: none;
+                outline: none;
+                flex: 1;
+            }
+            .dropdown {
+                position: absolute;
+                width: 400px;
+                border: 1px solid #ccc;
+                max-height: 200px;
                 overflow-y: auto;
                 background: white;
                 display: none;
                 z-index: 1000;
             }
-
-            .dropdown-item {
-                padding: 8px;
+            .option {
+                padding: 6px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
                 cursor: pointer;
             }
-
-            .dropdown-item:hover {
-                background: #eee;
+            .option:hover {
+                background: #f0f0f0;
             }
         </style>
     </head>
     <body>
         <div id="main">
-            <label for="email">Enter your 360Learning email:</label>
-            <input type="email" id="email" name="email">
+            <input type="email" id="assessor" name="assessor">
 
-            <!-- <label for="groups">Select a Group:</label>
-            <select name="groups" id="groups" autocomplete="">
+            <label for="groups">Select a Group:</label>
+            <select name="groups" id="groups">
                 <option value="">-- Loading Groups... --</option>
-            </select> -->
-
-            <div class="dropdown">
-                <label for="groups-input">Select a Group:</label>
-                <input type="text" id="groups-input" placeholder="-- Loading Groups.. --" autocomplete="off">
-                <input type="text" id="groups-input-id" disabled>
-                <div id="groups-list" class="dropdown-list"></div>
-            </div>
-
-            <label for="forms">Select a Form:</label>
-            <select name="forms" id="forms">
-                <option value="onboarding">Onboarding</option>
-                <option value="safety" selected>Safety</option>
             </select>
 
-            <label for="users">Select a User:</label>
-            <select name="users" id="users" disabled>
-                <option value="">-- Select a Group First --</option>
+            <label>Select a Form:</label>
+            <select name="forms" id="forms" disabled>
+                <option value="" selected>-- Select a Group First --</option>
             </select>
 
-            <!-- <details>
-                <summary>Select user(s)</summary>
-                <form>
-                    <fieldset>
-                        <legend>Users</legend>
-                        <ul>
-                            <li>
-                                <label for="safety">Safety</label>
-                                <input type="checkbox" id="safety" name="safety" value="safety">
-                            </li>
-                            <li>
-                                <label for="onboarding">Onboarding</label>
-                                <input type="checkbox" id="onboarding" name="onboarding" value="onboarding">
-                            </li>
-                        </ul>
-                    </fieldset>
-                </form>
-            </details> -->
-
-            <label for="users-mult">Select User(s):</label>
-            <select name="users-mult" id="users-mult" multiple size="1" listbox="true">
-                <option value="safety">Safety</option>
-                <option value="onboarding">Onboarding</option>
-                <option value="dei">DEI</option>
-            </select>
-
-            <div id="tasks">
-                <label for="tasks-performed">Tasks performed</label>
-                <div id="tasks-list">
-                    <span class="form-checkbox-item">
-                        <input type="checkbox" class="form-checkbox" id="task_1_1" value="Security Check 1">
-                        <label for="task_1_1">Security Check 1</label>
-                    </span>
-                    <span class="form-checkbox-item">
-                        <input type="checkbox" class="form-checkbox" id="task_1_2" value="Security Check 2">
-                        <label for="task_1_1">Security Check 2</label>
-                    </span>
-                    <span class="form-checkbox-item">
-                        <input type="checkbox" class="form-checkbox" id="task_1_3" value="Security Check 3">
-                        <label for="task_1_1">Security Check 3</label>
-                    </span>
-                    <span class="form-checkbox-item">
-                        <input type="checkbox" class="form-checkbox" id="task_1_4" value="Security Check 4">
-                        <label for="task_1_1">Security Check 4</label>
-                    </span>                                        
+            <label for="users">Select User(s):</label>
+            <div class="multiselect">
+                <div class="selected-box" id="users-selected-box">
+                    <input type="text" name="users" id="users-search-input" placeholder="Select users...">
                 </div>
+                <div class="dropdown" id="users-dropdown"></div>
             </div>
-
-            <button id="submit-test">Submit</button>
-            
-            <div id="debug-info"></div>
         </div>
 
         <script type="text/javascript">
             
             // --- CONFIGURATION ---
-            const WORKATO_GROUPS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/groups";            
+            const WORKATO_GROUPS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/groups";
+            const WORKATO_USER_GROUPS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/user-groups"
             const WORKATO_USERS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/groups/users";
             const WORKATO_ON_SUBMIT_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/form";
             const WORKATO_API_TOKEN = "b2250c7091ab1096be02367b2304c9b427542f660a61433865bb3d9c0b6a8a65";
@@ -162,6 +125,27 @@
                 }
             }
 
+            async function getUserGroups(email) {
+                try {
+                    const res = await fetch(`${WORKATO_USER_GROUPS_URL}?email=${email}`, { 
+                        method: 'GET',
+                        headers: {
+                            'api-token': WORKATO_API_TOKEN,
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const rawData = await res.json();
+                    return rawData.Groups || []; 
+
+                } catch(error) {
+                    console.error("User Group Fetch Failed:", error);
+                    return [];
+                }
+            }
+
             async function getUsers(groupId) {
                 try {
                     const workatoUsersEndpoint = `${WORKATO_USERS_URL}?groupId=${groupId}`;
@@ -184,202 +168,216 @@
                 }
             }
 
-            async function sendFormData(data) {
-                try {
-                    const res = await fetch(WORKATO_ON_SUBMIT_URL, {
-                        method: "POST",
-                        headers: {
-                            'api-token': WORKATO_API_TOKEN,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ 
-                            user_id: data.userId,
-                            group_id: data.groupId
-                        })
-                    });
+            // async function sendFormData(data) {
+            //     try {
+            //         const res = await fetch(WORKATO_ON_SUBMIT_URL, {
+            //             method: "POST",
+            //             headers: {
+            //                 'api-token': WORKATO_API_TOKEN,
+            //                 'Accept': 'application/json'
+            //             },
+            //             body: JSON.stringify({ 
+            //                 user_id: data.userId,
+            //                 group_id: data.groupId
+            //             })
+            //         });
 
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
-                } catch(error) {
-                    console.error("Form data export failed:", error);
-                    return [];
-                }
-            }
+            //         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            //         return res.json();
+            //     } catch(error) {
+            //         console.error("Form data export failed:", error);
+            //         return [];
+            //     }
+            // }
 
             // --- UI HELPERS ---
-
+            
             function populateDropdown(element, data, type) {
+                element.innerHTML = `<option value="">-- Select a ${type} --</option>`;
+                
                 if (!data || data.length === 0) {
                     element.innerHTML = `<option value="">No ${type}s found</option>`;
                     return;
                 }
 
                 data.forEach(item => {
-                    // const opt = document.createElement('option');
-                    const div = document.createElement("option");
-                    div.classList.add("dropdown-item");
-                    div.value = item._id;
-                    div.text = item.mail || item.name || "Unknown";
-                    div.hidden = true;
-                    element.appendChild(div);
+                    const opt = document.createElement('option');
+                    switch(type) {
+                        case "Form":
+                            opt.value = item;
+                            opt.text = item;
+                        break;
+                        case "User":
+                            opt.value = item.id;
+                            opt.text = `${item.mail} (${item.external_id})`;
+                        break;
+                        default:
+                            opt.value = item._id;
+                            opt.text = item.name;
+                    }
+                    element.appendChild(opt);
                 });
                 
                 element.disabled = false;
-
-                return data.map(item => item.mail || item.name || "Unknown");
             }
 
-            /**
-             * Implements a searchable dropdown input that forces the user
-             * to enter a value included in the specified options list.
-             * @param {Node} inputEl - The input HTML element
-             * @param {Node} listEl - The option list HTML element
-             * @param {Array} options - The list of accepted options
-             */ 
-            function activateSearchableDropdown(inputEl, idEl, listEl, options) {
-                let selectedValue = null;
+            function renderDropdown(filter = "") {
+                dropdown.innerHTML = "";
 
-                inputEl.addEventListener("input", () => {
-                    const val = inputEl.value.toLowerCase();
-                    selectedValue = null;
+                const filtered = options.filter(opt =>
+                    opt.mail.toLowerCase().includes(filter.toLowerCase()) ||
+                    opt.external_id.toLowerCase().includes(filter.toLowerCase())
+                );
 
-                    const filtered = options.filter(opt => 
-                        opt.toLowerCase().includes(val)
-                    )
+                filtered.forEach(opt => {
+                    const div = document.createElement("div");
+                    div.className = "option";
 
-                    if(filtered.length === 0 && inputEl.value) { 
-                        listEl.style.display = "none";
-                        return;
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.checked = selected.has(opt.id);
+
+                    const label = document.createElement("span");
+                    label.textContent = `${opt.mail} (${opt.external_id})`;
+
+                    // Toggle function
+                    const toggle = () => {
+                    if (selected.has(opt.id)) {
+                        selected.delete(opt.id);
+                        checkbox.checked = false;
+                    } else {
+                        selected.set(opt.id, opt.mail);
+                        checkbox.checked = true;
                     }
+                    updateInputDisplay();
+                    };
 
-                    const optDivs = document.querySelectorAll(".dropdown-item");
-
-                    filtered.forEach(opt => {
-                        for(el of optDivs) {
-                            if(el.textContent.trim() === opt) {
-                                el.hidden = false;
-                                el.addEventListener("click", () => {
-                                    inputEl.value = opt;
-                                    idEl.value = el.value;  // Store group ID
-                                    selectedValue = opt;
-                                    listEl.style.display = "none";
-                                });
-                                break;
-                            }
-                        }
+                    // Clicking the whole row toggles
+                    div.addEventListener("click", (e) => {
+                    // Prevent double toggle when clicking checkbox directly
+                    if (e.target.tagName !== "INPUT") {
+                        toggle();
+                    }
                     });
 
-                    listEl.style.display = "block";
+                    // Checkbox still works normally
+                    checkbox.addEventListener("change", toggle);
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    dropdown.appendChild(div);
                 });
 
-                inputEl.addEventListener("blur", () => {
-                    setTimeout(() => {
-                        listEl.style.display = "none";
-                        if(!options.includes(inputEl.value)) {
-                            inputEl.value = "";
-                        }
-                    }, 150);
-                });
+                dropdown.style.display = filtered.length ? "block" : "none";
             }
 
-            function validateSelection(value, options) {
-                return options.includes(value);
-            }
+            function updateInputDisplay() {
+                const count = selected.size;
 
-            function tasksCompleted(checkboxes) {
-                for(el of checkboxes) {
-                    if(!el.checked)
-                        return false;
+                if (count === 0) {
+                    input.value = "";
+                    input.placeholder = "Select options...";
+                } else {
+                    input.value = `${count} selected`;
                 }
-
-                return true;
             }
 
             // --- JOTFORM WIDGET INITIALIZATION ---
 
-            JFCustomWidget.subscribe("ready", async function() {
-                const groupSelect = document.querySelector('#groups-input');
-                const groupSelectId = document.querySelector('#groups-input-id');
-                const userSelect = document.querySelector('#users');
-                const groupList = document.querySelector('#groups-list');
+            JFCustomWidget.subscribe("ready", async function(data) {
+                // WIDGET ELEMENTS //
+                const assessorInput = document.querySelector('#assessor');
+                const groupSelect = document.querySelector('#groups');
+                const usersMultSelect = document.querySelector('#users-mult');
+                const formSelect = document.querySelector('#forms');
 
-                // 1. Load Groups
-                const groups = await getGroups();
-                populateDropdown(groupList, groups, "Group");
+                // Store prefilled email into widget
+                JFCustomWidget.getFieldsValueByName(["assessor"], async function(res) {
+                    items = (res && res.data) || [];
+                    const groups = await getUserGroups(items[0].value);
+                    populateDropdown(groupSelect, groups, "Group");
+                });
 
-                // 2. Change Listener for Groups
-                userSelect.addEventListener('click', async function(event) {
-                    const selectedGroupId = groupSelectId.value;
+                groupSelect.addEventListener('change', async function() {
+                    const selectedGroupId = this.value;
                     
                     if (!selectedGroupId) {
-                        userSelect.disabled = true;
-                        userSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
+                        usersMultSelect.disabled = true;
+                        usersMultSelect.innerHTML = '<option value="">-- Select a Group First --</option>';
                         return;
                     }
+
+                    formSelect.disabled = true;
+                    formSelect.innerHTML = '<option value="">Loading forms...</option>';
+                    populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
-                    userSelect.disabled = true;
-                    userSelect.innerHTML = '<option value="">Loading users...</option>';
-                    
+                    usersMultSelect.disabled = true;
+                    usersMultSelect.innerHTML = '<option value="">Loading users...</option>';
                     const users = await getUsers(selectedGroupId);
-                    populateDropdown(userSelect, users, "User");
+                    populateDropdown(usersMultSelect, users, "User");
+                });
+
+                formSelect.addEventListener('change', async function() {
+                    JFCustomWidget.setFieldsValueByLabel([
+                        { label: "Form", value: formSelect.value }
+                    ]);
+                });
+
+                usersMultSelect.addEventListener('change', async function() {
+                    JFCustomWidget.setFieldsValueByLabel([
+                        { label: "Learner", value: [...usersMultSelect.selectedOptions].map(op => op.text) }
+                    ]);
                 });
 
                 // 3. Handle Form Submission
-                JFCustomWidget.subscribe("submit", function() {
+                JFCustomWidget.subscribe("submit", async function() {
                     const formData = {
-                        userId: userSelect.value || "",
+                        assessor: assessorInput.value || "",
+                        userId: [...usersMultSelect.selectedOptions].map(op => op.text) || [],
                         groupId: groupSelect.value || ""
                     }
-                    const selectedValue = userSelect.value;
+                    const selectedValue = [...usersMultSelect.selectedOptions].map(op => op.text);
                     const result = {
                         valid: !!selectedValue,
                         value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
                     };
                     // Send results to Workato
-                    let submission = sendFormData(result.value);
-
+                    // if(result.valid) {
+                    //     let submission = await sendFormData(formData);
+                    // }
                     JFCustomWidget.sendSubmit(result);
                 });
             });
 
-            // const groupSelect = document.querySelector('#groups');
-            // const userSelect = document.querySelector('#users');
-            // const submitBtn = document.querySelector("#submit-test");
+            const options = [
+                { id: 123, name: "John Smith", mail: "smith@example.com", external_id: "ABC" },
+                { id: 234, name: "Joe Man", mail: "man@example.com", external_id: "BCD" },
+                { id: 345, name: "Laura Berry", mail: "berry@example.com", external_id: "CDE" },
+                { id: 456, name: "Aoi Li", mail: "li@example.com", external_id: "DEF" },
+                { id: 567, name: "Chadwick Allay", mail: "allay@example.com", external_id: "EFG" },
+                { id: 678, name: "John Smith 2", mail: "smith2@example.com", external_id: "FGH" }
+            ];
 
-            // groupSelect.value = "1234";
-            // userSelect.value = "5678";
-            // console.log(groupSelect.value);
+            const selected = new Map();
 
-            // submitBtn.addEventListener("click", async function() {
-            //     await sendFormData({
-            //         userId: groupSelect.value || "error",
-            //         groupId: userSelect.value || "error"
-            //     })
-            // })
+            const dropdown = document.getElementById("users-dropdown");
+            const input = document.getElementById("users-search-input");
+            const selectedBox = document.getElementById("users-selected-box");
 
-            const groupInput = document.querySelector("#groups-input");
-            const groupInputId = document.querySelector('#groups-input-id');
-            const groupList = document.querySelector("#groups-list");
-            const options = [{
-                _id: "1234",
-                name: "Group A"
-            },
-            {
-                _id: "2345",
-                name: "Group B"
-            },
-            {
-                _id: "3456",
-                name: "Group C"
-            }];
-            populateDropdown(groupList, options, "Group");
-            activateSearchableDropdown(groupInput, groupInputId, groupList, options.map(e => e.name));
+            input.addEventListener("focus", () => {
+                input.value = "";
+                renderDropdown("");
+            });
 
-            const usersMultSelect = document.querySelector("#users-mult");
-            usersMultSelect.addEventListener('change', event => {
-                let selected = [...usersMultSelect.selectedOptions].map(op => op.value);
-                console.log(selected);
-            })
+            input.addEventListener("input", () => {
+                renderDropdown(input.value);
+            });
+
+            document.addEventListener("click", (e) => {
+                if (!e.target.closest(".multiselect")) {
+                    dropdown.style.display = "none";
+                }
+            });
 
         </script>
     </body>
