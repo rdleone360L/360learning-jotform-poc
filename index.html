@@ -261,13 +261,15 @@
 
                     // Clicking the whole row toggles
                     div.addEventListener("click", (e) => {
-                    // Prevent double toggle when clicking checkbox directly
-                    if (e.target.tagName !== "INPUT") {
-                        toggle();
-                    }
+                        // Prevent double toggle when clicking checkbox directly
+                        if(e.target.tagName !== "INPUT") {
+                            toggle();
+                        }
+                        JFCustomWidget.setFieldsValueByLabel([
+                            { label: "Learner", value: selected.map(op => op.mail) }
+                        ]);
                     });
 
-                    // Checkbox still works normally
                     checkbox.addEventListener("change", toggle);
 
                     div.appendChild(checkbox);
@@ -283,7 +285,7 @@
 
                 if (count === 0) {
                     input.value = "";
-                    input.placeholder = "Select options...";
+                    input.placeholder = "Select users...";
                 } else {
                     input.value = `${count} selected`;
                 }
@@ -326,7 +328,6 @@
                     options = await getUsers(selectedGroupId);
                     renderDropdown(usersDropdown, usersInput, "");
                     usersInput.disabled = false;
-                    // populateDropdown(usersInput, users, "User");
                 });
 
                 formSelect.addEventListener('change', async function() {
@@ -346,8 +347,8 @@
 
                 usersInput.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
-                        { label: "Learner", value: usersInput.value }
-                        // { label: "Learner", value: selected.map(op => op.mail) }
+                        // { label: "Learner", value: usersInput.value }
+                        { label: "Learner", value: selected.map(op => op.mail) }
                         // { label: "Learner", value: [...usersInput.selectedOptions].map(op => op.text) }
                     ]);
                 });
