@@ -228,7 +228,7 @@
                 element.disabled = false;
             }
 
-            function renderDropdown(dropdown, options, filter = "") {
+            function renderDropdown(dropdown, input, filter = "") {
                 dropdown.innerHTML = "";
 
                 const filtered = options.filter(opt =>
@@ -278,7 +278,7 @@
                 dropdown.style.display = filtered.length ? "block" : "none";
             }
 
-            function updateInputDisplay() {
+            function updateInputDisplay(input) {
                 const count = selected.size;
 
                 if (count === 0) {
@@ -324,7 +324,7 @@
                     usersInput.disabled = true;
                     usersInput.innerHTML = '<option value="">Loading users...</option>';
                     options = await getUsers(selectedGroupId);
-                    renderDropdown(usersDropdown, options, "");
+                    renderDropdown(usersDropdown, usersInput, "");
                     usersInput.disabled = false;
                     // populateDropdown(usersInput, users, "User");
                 });
@@ -337,16 +337,17 @@
                 
                 usersInput.addEventListener("focus", () => {
                     usersInput.value = "";
-                    renderDropdown(usersDropdown, options, "");
+                    renderDropdown(usersDropdown, usersInput, "");
                 });
 
                 usersInput.addEventListener("input", () => {
-                    renderDropdown(usersDropdown, options, usersInput.value);
+                    renderDropdown(usersDropdown, usersInput, usersInput.value);
                 });
 
                 usersInput.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
                         { label: "Learner", value: usersInput.value }
+                        // { label: "Learner", value: selected.map(op => op.mail) }
                         // { label: "Learner", value: [...usersInput.selectedOptions].map(op => op.text) }
                     ]);
                 });
