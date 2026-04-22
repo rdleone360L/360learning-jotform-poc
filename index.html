@@ -27,11 +27,6 @@
                 <option value="" selected>-- Select a Group First --</option>
             </select>
 
-            <!-- <label for="users">Select a User:</label>
-            <select name="users" id="users" disabled>
-                <option value="">-- Select a Group First --</option>
-            </select> -->
-
             <label for="users-mult">Select User(s):</label>
             <select name="users-mult" id="users-mult" multiple size="1" listbox="true" disabled>
                 <option value="">-- Select a Group First --</option>
@@ -147,8 +142,19 @@
 
                 data.forEach(item => {
                     const opt = document.createElement('option');
-                    opt.value = type !== "Form" ? item._id : item; 
-                    opt.text = type !== "Form" ? (item.mail || item.name || "Unknown") : item; 
+                    switch(type) {
+                        case "Form":
+                            opt.value = item;
+                            opt.text = item;
+                        break;
+                        case "User":
+                            opt.value = item.id;
+                            opt.text = `${item.mail} (${item.external_id})`;
+                        break;
+                        default:
+                            opt.value = item._id;
+                            opt.text = item.name;
+                    }
                     element.appendChild(opt);
                 });
                 
@@ -161,7 +167,6 @@
                 // WIDGET ELEMENTS //
                 const assessorInput = document.querySelector('#assessor');
                 const groupSelect = document.querySelector('#groups');
-                // const userSelect = document.querySelector('#users');
                 const usersMultSelect = document.querySelector('#users-mult');
                 const formSelect = document.querySelector('#forms');
 
@@ -196,12 +201,6 @@
                         { label: "Form", value: formSelect.value }
                     ]);
                 });
-
-                // userSelect.addEventListener('change', async function() {
-                //     JFCustomWidget.setFieldsValueByLabel([
-                //         { label: "Learner", value: userSelect.selectedOptions[0].text }
-                //     ]);
-                // });
 
                 usersMultSelect.addEventListener('change', async function() {
                     JFCustomWidget.setFieldsValueByLabel([
