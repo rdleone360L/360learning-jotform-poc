@@ -225,6 +225,67 @@
                 element.disabled = false;
             }
 
+            function renderDropdown(filter = "") {
+                dropdown.innerHTML = "";
+
+                const filtered = options.filter(opt =>
+                    opt.mail.toLowerCase().includes(filter.toLowerCase()) ||
+                    opt.external_id.toLowerCase().includes(filter.toLowerCase())
+                );
+
+                filtered.forEach(opt => {
+                    const div = document.createElement("div");
+                    div.className = "option";
+
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.checked = selected.has(opt.id);
+
+                    const label = document.createElement("span");
+                    label.textContent = `${opt.mail} (${opt.external_id})`;
+
+                    // Toggle function
+                    const toggle = () => {
+                    if (selected.has(opt.id)) {
+                        selected.delete(opt.id);
+                        checkbox.checked = false;
+                    } else {
+                        selected.set(opt.id, opt.mail);
+                        checkbox.checked = true;
+                    }
+                    updateInputDisplay();
+                    };
+
+                    // Clicking the whole row toggles
+                    div.addEventListener("click", (e) => {
+                    // Prevent double toggle when clicking checkbox directly
+                    if (e.target.tagName !== "INPUT") {
+                        toggle();
+                    }
+                    });
+
+                    // Checkbox still works normally
+                    checkbox.addEventListener("change", toggle);
+
+                    div.appendChild(checkbox);
+                    div.appendChild(label);
+                    dropdown.appendChild(div);
+                });
+
+                dropdown.style.display = filtered.length ? "block" : "none";
+            }
+
+            function updateInputDisplay() {
+                const count = selected.size;
+
+                if (count === 0) {
+                    input.value = "";
+                    input.placeholder = "Select options...";
+                } else {
+                    input.value = `${count} selected`;
+                }
+            }
+
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function(data) {
