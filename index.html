@@ -225,7 +225,7 @@
                 element.disabled = false;
             }
 
-            function renderDropdown(filter = "") {
+            function renderDropdown(dropdown, filter = "") {
                 dropdown.innerHTML = "";
 
                 const filtered = options.filter(opt =>
@@ -320,8 +320,8 @@
                     
                     usersInput.disabled = true;
                     usersInput.innerHTML = '<option value="">Loading users...</option>';
-                    const users = await getUsers(selectedGroupId);
-                    populateDropdown(usersInput, users, "User");
+                    // const users = await getUsers(selectedGroupId);
+                    // populateDropdown(usersInput, users, "User");
                 });
 
                 formSelect.addEventListener('change', async function() {
@@ -332,11 +332,11 @@
                 
                 usersInput.addEventListener("focus", () => {
                     usersInput.value = "";
-                    renderDropdown("");
+                    renderDropdown(usersDropdown, "");
                 });
 
                 usersInput.addEventListener("input", () => {
-                    renderDropdown(usersInput.value);
+                    renderDropdown(usersDropdown, usersInput.value);
                 });
 
                 usersInput.addEventListener('change', async function() {
