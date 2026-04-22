@@ -225,7 +225,7 @@
                 element.disabled = false;
             }
 
-            function renderDropdown(dropdown, filter = "") {
+            function renderDropdown(dropdown, options, filter = "") {
                 dropdown.innerHTML = "";
 
                 const filtered = options.filter(opt =>
@@ -299,6 +299,7 @@
                 const formSelect = document.querySelector('#forms');
 
                 const selected = new Map();
+                let options = [];
 
                 // Store prefilled email into widget
                 JFCustomWidget.getFieldsValueByName(["assessor"], async function(res) {
@@ -321,9 +322,10 @@
                     populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
                     // usersInput.disabled = true;
+                    options = await getUsers(selectedGroupId);
                     usersInput.innerHTML = '<option value="">Loading users...</option>';
-                    renderDropdown(usersDropdown, "");
-                    // const users = await getUsers(selectedGroupId);
+                    renderDropdown(usersDropdown, options, "");
+                    
                     // populateDropdown(usersInput, users, "User");
                 });
 
@@ -335,11 +337,11 @@
                 
                 usersInput.addEventListener("focus", () => {
                     usersInput.value = "";
-                    renderDropdown(usersDropdown, "");
+                    renderDropdown(usersDropdown, options, "");
                 });
 
                 usersInput.addEventListener("input", () => {
-                    renderDropdown(usersDropdown, usersInput.value);
+                    renderDropdown(usersDropdown, options, usersInput.value);
                 });
 
                 usersInput.addEventListener('change', async function() {
