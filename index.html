@@ -298,6 +298,8 @@
                 const usersSelectedBox = document.getElementById("users-selected-box");
                 const formSelect = document.querySelector('#forms');
 
+                const selected = new Map();
+
                 // Store prefilled email into widget
                 JFCustomWidget.getFieldsValueByName(["assessor"], async function(res) {
                     items = (res && res.data) || [];
