@@ -320,8 +320,9 @@
                     formSelect.innerHTML = '<option value="">Loading forms...</option>';
                     populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
-                    usersInput.disabled = true;
+                    // usersInput.disabled = true;
                     usersInput.innerHTML = '<option value="">Loading users...</option>';
+                    renderDropdown(usersDropdown, "");
                     // const users = await getUsers(selectedGroupId);
                     // populateDropdown(usersInput, users, "User");
                 });
