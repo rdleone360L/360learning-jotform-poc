@@ -349,22 +349,14 @@
                     renderDropdown(usersDropdown, usersInput, usersInput.value);
                 });
 
-                usersInput.addEventListener('change', async function() {
-                    JFCustomWidget.setFieldsValueByLabel([
-                        // { label: "Learner", value: usersInput.value }
-                        { label: "Learner", value: selected.map(op => op.mail) }
-                        // { label: "Learner", value: [...usersInput.selectedOptions].map(op => op.text) }
-                    ]);
-                });
-
                 // 3. Handle Form Submission
                 JFCustomWidget.subscribe("submit", async function() {
                     const formData = {
                         assessor: assessorInput.value || "",
-                        userId: [...usersInput.selectedOptions].map(op => op.text) || [],
+                        userId: [...selected.keys()].join(",") || [],
                         groupId: groupSelect.value || ""
                     }
-                    const selectedValue = [...usersInput.selectedOptions].map(op => op.text);
+                    const selectedValue = [...selected.keys()].join(",");
                     const result = {
                         valid: !!selectedValue,
                         value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
