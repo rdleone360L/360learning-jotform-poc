@@ -253,7 +253,11 @@
                         selected.delete(opt.id);
                         checkbox.checked = false;
                     } else {
-                        selected.set(opt.id, opt.mail);
+                        selected.set(opt.id, {
+                            mail: opt.mail,
+                            name: opt.name,
+                            external_id: opt.external_id
+                        });
                         checkbox.checked = true;
                     }
                     updateInputDisplay(input);
@@ -266,7 +270,7 @@
                             toggle();
                         }
                         JFCustomWidget.setFieldsValueByLabel([
-                            { label: "Learner", value: selected.map(op => op.mail) }
+                            { label: "Learner", value: [...selected.keys()].join(",") }
                         ]);
                     });
 
