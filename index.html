@@ -537,7 +537,8 @@
 
                 document.querySelector("#clear-users-input").addEventListener("click", () => {
                     usersInput.value = "";
-                })
+                    renderDropdown(usersDropdown, usersInput, "");
+                });
 
                 // 3. Handle Form Submission
                 JFCustomWidget.subscribe("submit", async function() {
