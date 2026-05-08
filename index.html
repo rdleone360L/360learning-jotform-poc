@@ -523,10 +523,10 @@
                     await startScanner();
                 });
                 
-                document.querySelector(".multiselect").addEventListener("focusout", () => {
-                    usersInput.value = "";
-                    renderDropdown(usersDropdown, usersInput, "");
-                });
+                // document.querySelector(".multiselect").addEventListener("focusout", () => {
+                //     usersInput.value = "";
+                //     renderDropdown(usersDropdown, usersInput, "");
+                // });
 
                 usersInput.addEventListener("input", () => {
                     renderDropdown(usersDropdown, usersInput, usersInput.value);
