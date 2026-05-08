@@ -3,17 +3,16 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://serratus.github.io/quaggaJS/examples/js/quagga.min.js"></script>
         <script src="//js.jotform.com/JotFormCustomWidget.min.js"></script>
         <style>
             html * {
                 box-sizing: border-box;
-            }
-            #main { 
+                margin: 0;
                 font-family: sans-serif;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                padding: 10px;
+            }
+            body div {
+                padding-bottom: 1rem;
             }
             select, .selected-box {
                 width: 100%;
@@ -28,13 +27,49 @@
                 font-size: 14px;
                 margin-top: 5px; 
             }
-            #debug-info { 
-                margin-top: 10px;
-                font-size: 11px;
-                color: #d9534f;
+            button {
+                margin: 4px;
+                padding: 10px 20px;
+                font-size: 16px;
+                border: 1px solid black;
+                border-radius: 8px;
+            }
+            button:hover {
+                background-color: #c0c0c0cb;
+            }
+            button:active {
+                background-color: #a8a8a8cb;
+            }
+            #main {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
             }
             #assessor { 
                 display: none
+            }
+            #scanner {
+                max-width: 400px;
+                max-height: max-content;
+                background: white;
+            }
+            #scanner video {
+                width: 100%;
+                height: auto;
+                position: relative;
+                z-index: 0;
+            }
+            #scanner canvas {
+                display: none;
+            }
+            #result {
+                margin-top: 10px;
+                font-size: 18px;
+                font-weight: bold;
+            } 
+            #barcode-id {
+                padding: 4px 12px 12px 12px;
             }
             .selected-box {
                 cursor: text;
@@ -83,10 +118,14 @@
                 <option value="" selected>-- Select a Group First --</option>
             </select>
 
-            <!-- <label for="users-mult">Select User(s):</label>
-            <select name="users-mult" id="users-mult" multiple size="1" listbox="true" disabled>
-                <option value="">-- Select a Group First --</option>
-            </select> -->
+            <div id="barcode-control">
+                <button id="start-scan">Scan Barcode</button>
+                <button id="scan-mode" onclick="toggleMode()">Mode: <span id="mode-label">Auto</span></button>
+                <button id="scan-capture" onclick="manualCapture()" style="display:none;">Capture</button>
+                <button id="add-user" style="display:none;">Add User</button>
+            </div>
+            <div id="scanner"></div>
+            <div id="result">No scan yet</div>
 
             <label for="users">Select User(s):</label>
             <div class="multiselect">
@@ -104,10 +143,14 @@
             const WORKATO_USER_GROUPS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/user-groups"
             const WORKATO_USERS_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/groups/users";
             const WORKATO_ON_SUBMIT_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/form";
+            const WORKATO_GET_USER_URL = "https://apim.eu.workato.com/360learning_eu/jotform-poc-v1/users";
             const WORKATO_API_TOKEN = "b2250c7091ab1096be02367b2304c9b427542f660a61433865bb3d9c0b6a8a65";
 
             const selected = new Map();
             let options = [];
+            let scanning = false;
+            let autoMode = true;
+            let lastDetectedCode = null;
 
             // --- API CALLS ---
 
@@ -172,6 +215,117 @@
                 } catch(error) {
                     console.error("User Fetch Failed:", error);
                     return [];
+                }
+            }
+
+            async function getUserById(id) {
+                try {
+                    const workatoUserEndpoint = `${WORKATO_GET_USER_URL}/${id}`;
+                    const res = await fetch(workatoUserEndpoint, { 
+                        method: 'GET',
+                        headers: {
+                            'api-token': WORKATO_API_TOKEN,
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const userData = await res.json();
+                    return userData || {}; 
+
+                } catch(error) {
+                    console.error("User Fetch Failed:", error);
+                    return [];
+                }
+            }
+
+            // --- SCANNER FUNCTIONS ---
+
+            async function startScanner() {
+                if (scanning) return;
+                document.getElementById("result").textContent = "No scan yet";
+
+                Quagga.init({
+                    inputStream: {
+                        type: "LiveStream",
+                        target: document.querySelector('#scanner'),
+                        constraints: {
+                            width: { min: 640, ideal: 1280 },
+                            height: { min: 480, ideal: 720 },
+                            facingMode: "environment",
+                            aspectRatio: { min: 1, max: 2 }
+                        }
+                    },
+                    locator: {
+                        halfSample: true
+                    },
+                    decoder: {
+                        readers: ["code_39_reader", "code_128_reader"]
+                    }
+                }, function(err) {
+                    if (err) {
+                        console.error(err);
+                        alert("Camera error");
+                        return;
+                    }
+                    Quagga.start();
+                    scanning = true;
+                });
+
+                Quagga.onDetected(function(result) {
+                    const code = result.codeResult.code;
+
+                    lastDetectedCode = code;
+
+                    if (autoMode) {
+                        finalizeScan(code);
+                    } else {
+                        // Show preview only
+                        document.getElementById("result").innerText = "Detected: " + code;
+                    }
+                });
+            }
+
+            async function toggleMode() {
+                autoMode = !autoMode;
+
+                document.getElementById("mode-label").innerText = autoMode ? "Auto" : "Manual";
+                document.getElementById("scan-capture").style.display = autoMode ? "none" : "inline-block";
+            }
+
+            async function manualCapture() {
+                if (!lastDetectedCode) {
+                    alert("No barcode detected yet.");
+                    return;
+                }
+
+                finalizeScan(lastDetectedCode);
+            }
+
+            async function finalizeScan(code) {
+                document.getElementById("result").textContent = "Scanned: " + code;
+
+                JFCustomWidget.sendData({ value: code });
+
+                Quagga.stop();
+                scanning = false;
+                document.querySelector('#scanner').innerHTML = "";
+
+                user = await getUserById(code);
+
+                if(user && (!options || !options.map(o => o.external_id).includes(code))) {
+                    options.push({
+                        mail: user.user.mail,
+                        name: `${user.user.firstName || ""} ${user.user.lastName || ""}`,
+                        external_id: code
+                    });
+                    selected.set(code, {
+                        mail: user.user.mail,
+                        name: `${user.user.firstName || ""} ${user.user.lastName || ""}`,
+                        external_id: code
+                    });
+                    renderDropdown(document.getElementById("users-dropdown"), document.getElementById("users-search-input"), "");
                 }
             }
 
@@ -242,28 +396,26 @@
 
                     const checkbox = document.createElement("input");
                     checkbox.type = "checkbox";
-                    checkbox.checked = selected.has(opt.id);
+                    checkbox.checked = selected.has(opt.external_id);
 
                     const label = document.createElement("span");
-                    label.textContent = `${opt.mail} (${opt.external_id})`;
+                    label.textContent = `${opt.name} (${opt.external_id})`;
 
-                    // Toggle function
                     const toggle = () => {
-                    if (selected.has(opt.id)) {
-                        selected.delete(opt.id);
-                        checkbox.checked = false;
-                    } else {
-                        selected.set(opt.id, {
-                            mail: opt.mail,
-                            name: opt.name,
-                            external_id: opt.external_id
-                        });
-                        checkbox.checked = true;
-                    }
-                    updateInputDisplay(input);
+                        if(selected.has(opt.external_id)) {
+                            selected.delete(opt.external_id);
+                            checkbox.checked = false;
+                        } else {
+                            selected.set(opt.external_id, {
+                                mail: opt.mail,
+                                name: opt.name,
+                                external_id: opt.external_id
+                            });
+                            checkbox.checked = true;
+                        }
+                        updateInputDisplay(input);
                     };
 
-                    // Clicking the whole row toggles
                     div.addEventListener("click", (e) => {
                         // Prevent double toggle when clicking checkbox directly
                         if(e.target.tagName !== "INPUT") {
@@ -279,6 +431,7 @@
                     div.appendChild(checkbox);
                     div.appendChild(label);
                     dropdown.appendChild(div);
+                    updateInputDisplay(input);
                 });
 
                 dropdown.style.display = filtered.length ? "block" : "none";
@@ -295,17 +448,25 @@
                 }
             }
 
+            document.querySelector('#start-scan').addEventListener('click', async function() {
+                await startScanner();
+            });
+
             // --- JOTFORM WIDGET INITIALIZATION ---
 
             JFCustomWidget.subscribe("ready", async function(data) {
-                // WIDGET ELEMENTS //
+                // --- WIDGET ELEMENTS ---
                 const assessorInput = document.querySelector('#assessor');
+
                 const groupSelect = document.querySelector('#groups');
-                // const usersMultSelect = document.querySelector('#users-mult');
+
                 const usersDropdown = document.getElementById("users-dropdown");
                 const usersInput = document.getElementById("users-search-input");
                 const usersSelectedBox = document.getElementById("users-selected-box");
                 const formSelect = document.querySelector('#forms');
+                
+                const scanBox = document.querySelector('#scanner');
+                const scanBtn = document.querySelector('#start-scan');
 
                 // Store prefilled email into widget
                 JFCustomWidget.getFieldsValueByName(["assessor"], async function(res) {
