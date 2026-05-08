@@ -130,7 +130,7 @@
             <label for="users">Select User(s):</label>
             <div class="multiselect">
                 <div class="selected-box" id="users-selected-box">
-                    <input type="text" name="users" id="users-search-input" placeholder="Select users..." disabled>
+                    <input type="text" name="users" id="users-search-input" placeholder="--- Select Users ---" disabled>
                 </div>
                 <div class="dropdown" id="users-dropdown"></div>
             </div>
@@ -442,15 +442,34 @@
 
                 if (count === 0) {
                     input.value = "";
-                    input.placeholder = "Select users...";
+                    input.placeholder = "--- Select Users ---";
                 } else {
-                    input.value = `${count} selected`;
+                    input.placeholder = `${count} selected`;
                 }
             }
 
-            document.querySelector('#start-scan').addEventListener('click', async function() {
-                await startScanner();
-            });
+            // document.querySelector('#start-scan').addEventListener('click', async function() {
+            //     await startScanner();
+            // });
+
+            // document.querySelector('#groups').addEventListener('change', async function() {
+            //     const selectedGroupId = this.value;
+                
+            //     if (!selectedGroupId) {
+            //         document.querySelector("#users-selected-box").disabled = true;
+            //         document.querySelector("#users-search-input").innerHTML = '<option value="">-- Select a Group First --</option>';
+            //         return;
+            //     }
+
+            //     document.querySelector("#forms").disabled = true;
+            //     document.querySelector("#forms").innerHTML = '<option value="">Loading forms...</option>';
+            //     populateDropdown(document.querySelector("#forms"), ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
+                
+            //     document.getElementById("users-search-input").disabled = true;
+            //     options = await getUsers(selectedGroupId);
+            //     renderDropdown(document.getElementById("users-dropdown"), document.getElementById("users-search-input"), "");
+            //     document.getElementById("users-search-input").disabled = false;
+            // });
 
             // --- JOTFORM WIDGET INITIALIZATION ---
 
@@ -489,7 +508,6 @@
                     populateDropdown(formSelect, ["Pump Truck On The Job", "Personal Hygiene and Health"], "Form");
                     
                     usersInput.disabled = true;
-                    usersInput.innerHTML = '<option value="">Loading users...</option>';
                     options = await getUsers(selectedGroupId);
                     renderDropdown(usersDropdown, usersInput, "");
                     usersInput.disabled = false;
@@ -499,6 +517,10 @@
                     JFCustomWidget.setFieldsValueByLabel([
                         { label: "Form", value: formSelect.value }
                     ]);
+                });
+
+                scanBtn.addEventListener('click', async function() {
+                    await startScanner();
                 });
                 
                 usersInput.addEventListener("focus", () => {
@@ -520,7 +542,7 @@
                     const selectedValue = [...selected.keys()].join(",");
                     const result = {
                         valid: !!selectedValue,
-                        value: selectedValue ? JSON.stringify(formData) : "" // This saves the User _id to the Jotform submission
+                        value: selectedValue ? JSON.stringify(formData) : ""
                     };
                     // Send results to Workato
                     // if(result.valid) {
