@@ -523,7 +523,7 @@
                     await startScanner();
                 });
                 
-                usersInput.addEventListener("focus", () => {
+                usersInput.addEventListener("focusout", () => {
                     usersInput.value = "";
                     renderDropdown(usersDropdown, usersInput, "");
                 });
