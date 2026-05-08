@@ -326,6 +326,7 @@
                         external_id: code
                     });
                     renderDropdown(document.getElementById("users-dropdown"), document.getElementById("users-search-input"), "");
+                    updateInputDisplay(input);
                 }
             }
 
@@ -431,7 +432,6 @@
                     div.appendChild(checkbox);
                     div.appendChild(label);
                     dropdown.appendChild(div);
-                    updateInputDisplay(input);
                 });
 
                 dropdown.style.display = filtered.length ? "block" : "none";
