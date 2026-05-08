@@ -523,7 +523,7 @@
                     await startScanner();
                 });
                 
-                usersInput.addEventListener("focusout", () => {
+                document.querySelector(".multiselect").addEventListener("focusout", () => {
                     usersInput.value = "";
                     renderDropdown(usersDropdown, usersInput, "");
                 });
